@@ -4,7 +4,7 @@ def register_addon():
     from ..property import register_properties
     
     #Operators
-    from ..operator import register_operators
+    from ..operators import register_operators
     register_operators()
     
     # Menus
@@ -23,7 +23,7 @@ def unregister_addon():
     from ..property import register_properties
     
     #Operators
-    from ..operator import unregister_operators
+    from ..operators import unregister_operators
     unregister_operators()
     
     #Menus

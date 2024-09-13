@@ -3,7 +3,7 @@ import bpy
 from .mesh_menu import draw_mesh, draw_mask
 from ..icons.icons import load_icons
 from .brush_panel import draw_sculpt_panels
-from ..operator.open_proj_dir import DH_OP_Open_Proj_Dir
+from ..operators.open_proj_dir import DH_OP_Open_Proj_Dir
 
 
 class DH_MT_Main_Menu(bpy.types.Menu):
