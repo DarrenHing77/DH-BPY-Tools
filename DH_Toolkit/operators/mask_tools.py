@@ -30,9 +30,12 @@ def get_bm_and_mask(mesh):
     bm.edges.ensure_lookup_table()
     bm.faces.ensure_lookup_table()
 
-    layer = bm.verts.layers.mask.verify()
+    # Access the sculpt mask data from faces
+    for face in bm.faces:
+        if not face.select:  # If the face is not selected by the mask
+            bm.faces.remove(face) # Remove the face
 
-    return bm, layer
+    return bm, None  # You don't need to return a separate mask layer
 
 
 def boundary_loops_create(bm, loops=2, smoothing=6, smooth_depth=3):
@@ -231,6 +234,8 @@ class DH_OP_MaskExtract(bpy.types.Operator):
 
 
 
+import bpy
+
 class DH_OP_MaskSplit(bpy.types.Operator):
     bl_idname = 'dh.mask_split'
     bl_label = 'Mask Split'
@@ -254,52 +259,19 @@ class DH_OP_MaskSplit(bpy.types.Operator):
         bpy.ops.object.mode_set(mode='OBJECT')
         return context.window_manager.invoke_props_dialog(self)
 
-    def remove_half(self, bm, invert=False):
-        for face in bm.faces:
-            if (face.select and not invert) or (not face.select and invert):
-                bm.faces.remove(face)
-        for vert in bm.verts:
-            if len(vert.link_faces) == 0:
-                bm.verts.remove(vert)
-        bmesh.ops.holes_fill(bm, edges=bm.edges)
-        bmesh.ops.triangulate(bm, faces=[face for face in bm.faces if len(face.verts) > 4])
-
     def execute(self, context):
         ob = context.active_object
-        bm, mask = get_bm_and_mask(ob.data)
-        bm.faces.ensure_lookup_table()
-        face_mask = []
 
-        for face in bm.faces:
-            mask_sum = 0
-            for vert in face.verts:
-                mask_sum += vert[mask]
-            face_mask.append(mask_sum / len(face.verts))
-
-        geom1 = []
-
-        for face in bm.faces:
-            if face_mask[face.index] > 0.5:
-                geom1.append(face)
-                face.select = True
-            else:
-                face.select = False
-
-        bm1 = bm.copy()
-
-        invert = False
         if self.keep == 'MASKED':
-            invert = True
-
-        self.remove_half(bm, invert=invert)
-        bm.to_mesh(ob.data)
-
-        if self.keep == 'BOTH':
-            bpy.ops.object.duplicate()
-            self.remove_half(bm1, invert=True)
-            bm1.to_mesh(context.active_object.data)
-            self.remove_half(bm)
-            bm.to_mesh(ob.data)
+            bpy.ops.mesh.paint_mask_slice(mask_threshold=0.5, fill_holes=True, new_object=True)
+            context.active_object.select_set(False)
+            ob.select_set(True)
+            bpy.ops.object.delete(use_global=False)
+        elif self.keep == 'UNMASKED':
+            bpy.ops.mesh.paint_mask_slice(mask_threshold=0.5, fill_holes=True, new_object=True)
+            bpy.ops.object.delete(use_global=False)
+        elif self.keep == 'BOTH':
+            bpy.ops.mesh.paint_mask_slice(mask_threshold=0.5, fill_holes=True, new_object=True)
 
         return {'FINISHED'}
 

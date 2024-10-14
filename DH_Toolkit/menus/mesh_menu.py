@@ -34,7 +34,7 @@ def draw_mask(layout, context):
     ob = context.active_object
     layout.label(text='Mask Tools')
     layout.operator('dh.mask_extract')
-    layout.operator('dh.mask_split')
+    layout.operator('mesh.paint_mask_slice')
     layout.operator('sculpt_tool_kit.mask_decimate')
     if ob:
         if not ob.get('MASK_RIG'):
