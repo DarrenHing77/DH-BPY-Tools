@@ -8,10 +8,11 @@ from .DCC_Export import DH_OP_dcc_export
 from .mask_tools import DH_OP_MaskExtract
 from .export_obj_multi import DH_OP_export_obj_multi
 from .project_manager import DH_OP_CreateProjectDirectories, DH_OP_Proj_Manage, DH_OP_Project_Manager_Popup
+from .mask_tools import DH_OP_MaskExtract, DH_OP_MaskSplit
 
 classes = (DH_OP_dcc_import, DH_OP_Decimate,SetDiffuseColorOperator,DH_OP_Open_Proj_Dir,
            DH_OP_dcc_export, DH_OP_MaskExtract, DH_OP_export_obj_multi,
-           DH_OP_CreateProjectDirectories, DH_OP_Proj_Manage, DH_OP_Project_Manager_Popup
+           DH_OP_CreateProjectDirectories, DH_OP_Proj_Manage, DH_OP_Project_Manager_Popup, DH_OP_MaskSplit
            )
 
 def register_operators():

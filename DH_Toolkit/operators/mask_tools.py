@@ -30,7 +30,7 @@ def get_bm_and_mask(mesh):
     bm.edges.ensure_lookup_table()
     bm.faces.ensure_lookup_table()
 
-    layer = bm.verts.layers.paint_mask.verify()
+    layer = bm.verts.layers.mask.verify()
 
     return bm, layer
 
@@ -231,8 +231,8 @@ class DH_OP_MaskExtract(bpy.types.Operator):
 
 
 
-class MaskSplit(bpy.types.Operator):
-    bl_idname = 'sculpt_tool_kit.mask_split'
+class DH_OP_MaskSplit(bpy.types.Operator):
+    bl_idname = 'dh.mask_split'
     bl_label = 'Mask Split'
     bl_description = 'Split masked and unmasked areas away.'
     bl_options = {'REGISTER', 'UNDO'}
