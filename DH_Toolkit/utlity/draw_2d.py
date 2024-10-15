@@ -22,7 +22,7 @@ class Draw2D:
         self.text = []
         self.thickness = 2
         self.font_shadow = (0, 0, 0, 0.5)
-        self.shader = gpu.shader.from_builtin('2D_FLAT_COLOR')
+        self.shader = gpu.shader.from_builtin('FLAT_COLOR')
         self.batch_redraw = False
         self.batch = None
         self.handler = None

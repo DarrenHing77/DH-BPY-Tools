@@ -2,9 +2,6 @@ import os
 import bpy
 import json
 from os import path
-from .multifile import register_class, register_function, unregister_function
-from .envelope_builder import get_armature_filenames
-from .keymap_items import key_types
 from bpy.app.handlers import persistent
 
 ADDON_NAME = os.path.basename(os.path.dirname(__file__))
@@ -51,7 +48,7 @@ def draw_booleans(layout, context):
     layout.operator('sculpt_tool_kit.slash', icon='GREASEPENCIL')
 
 
-@register_class
+
 class SCTK_PT_envelope_list(bpy.types.Panel):
     bl_idname = 'SCULPT_TOOL_KIT_PT_envelope_list'
     bl_label = 'Add Envelope Base'
@@ -86,7 +83,7 @@ def get_brush_enum_data(self, context):
     return data
 
 
-@register_class
+
 class BrushSet(bpy.types.Operator):
     bl_idname = 'sculpt_tool_kit.brush_set'
     bl_label = 'Brush Set'
@@ -112,7 +109,7 @@ def brush_icon_get(brush):
     return 'NONE'  # todo: find a way to get the correct icon
 
 
-@register_class
+
 class SCKT_PT_brushes_list(bpy.types.Panel):
     bl_idname = 'SCULPT_TOOL_KIT_PT_brushes_list'
     bl_label = 'Brushes List'

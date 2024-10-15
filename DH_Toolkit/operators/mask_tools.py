@@ -118,286 +118,83 @@ class BoundaryPolish:
 
 
 
+
+
+
+
 class DH_OP_MaskExtract(bpy.types.Operator):
+    """Extract and solidify Masked region as a new object"""
     bl_idname = 'dh.mask_extract'
     bl_label = 'Extract Mask'
-    bl_description = 'Extract and solidify Masked region as a new object'
-    bl_options = {'REGISTER'}
-    obj = None
-    solidify = None
-    smooth = None
-    polish_iterations = 5
-    last_mouse = 0
-    click_count = 0
+    bl_options = {'REGISTER', 'UNDO'}
 
-    @classmethod
-    def poll(cls, context):
-        if context.active_object:
-            return context.active_object.type == 'MESH'
+    smooth_factor: bpy.props.FloatProperty(name="Smooth", default=0.5, min=0, max=1)
 
     def execute(self, context):
-        self.last_mode = context.active_object.mode
-        self.click_count = 0
-        bpy.ops.object.mode_set(mode='OBJECT')
-        bm, mask = get_bm_and_mask(context.active_object.data)
+        # Use the new mask extract operator
+        bpy.ops.mesh.paint_mask_extract(
+            mask_threshold=0.5,  
+            smooth_iterations=0,  
+        )
 
-        self.slider = VerticalSlider(center=None)
-        self.slider.setup_handler()
+        self.obj = context.active_object
+        self.solidify = self.obj.modifiers["geometry_extract_solidify"] 
+        self.solidify.offset = 0
 
-        for face in bm.faces:
-            avg = sum(vert[mask] for vert in face.verts) / len(face.verts)
-            if avg < 0.5:
-                bm.faces.remove(face)
-        remove = []
-        dissolve = []
-        for vert in bm.verts:
-            if len(vert.link_faces) < 1:
-                remove.append(vert)
-            elif len(vert.link_faces) == 1:
-                dissolve.append(vert)
-        for vert in remove:
-            bm.verts.remove(vert)
+        # Add Solidify modifier
+        #self.solidify = self.obj.modifiers.new(type='SOLIDIFY', name='Solidify')
+        #self.solidify.thickness = 0.01  # Initial thickness
 
-        bmesh.ops.dissolve_verts(bm, verts=dissolve)
-
-        BoundaryPolish(bm).polish(iterations=50)
-        # boundary_loops_create(bm, loops=1, smoothing=6)
-
-        self.obj = create_object_from_bm(bm,
-                                         context.active_object.matrix_world,
-                                         context.active_object.name + '_Shell')
-        self.bm = bm
-        self.obj.select_set(True)
-        context.view_layer.objects.active = self.obj
-
-        self.displace = self.obj.modifiers.new(type='DISPLACE', name='DISPLACE')
-        self.displace.strength = 0
-        self.solidify = self.obj.modifiers.new(type='SOLIDIFY', name='Solidify')
-        self.solidify.offset = 1
-        self.solidify.thickness = 0
+        # Add Smooth modifier
         self.smooth = self.obj.modifiers.new(type='SMOOTH', name='SMOOTH')
-        self.smooth.iterations = 5
-        self.smooth.factor = 0
+        self.smooth.factor = self.smooth_factor
+        self.smooth.iterations = 5  
+
+        self.last_mouse = Vector((0, 0)) 
+
+        # Create the slider instance
+        self.slider = VerticalSlider(center=Vector((100, 300))) 
+        self.slider.setup_handler()
 
         context.window_manager.modal_handler_add(self)
         return {'RUNNING_MODAL'}
 
     def modal(self, context, event):
-
         mouse_co = Vector((event.mouse_region_x, event.mouse_region_y))
-        if not self.slider.center:
-            self.slider.center = mouse_co
-
-        dist = context.region_data.view_distance
-
-        if event.type == 'LEFTMOUSE' and event.value == 'PRESS':
-            self.click_count += 1
-        elif event.type in {'ESC', 'RIGHTMOUSE'}:
-            self.click_count = 4
+        delta = self.last_mouse - mouse_co
+        self.last_mouse = mouse_co
 
         if event.type == 'MOUSEMOVE':
+            scale = 700 / context.region_data.view_distance
+            # Use the slider to evaluate thickness
+            self.solidify.thickness = self.slider.eval(
+                mouse_co, "Thickness", unit_scale=scale, digits=3
+            )
+            #self.solidify.thickness = max(self.solidify.thickness, 0)
+            
 
-            delta = self.last_mouse - event.mouse_y
-            self.last_mouse = event.mouse_y
-            if self.click_count == 0:
-                scale = 700 / dist if not event.shift else 1400 / dist
-                self.solidify.thickness = self.slider.eval(mouse_co, 'Thickness', unit_scale=scale)
-                self.solidify.thickness = max(self.solidify.thickness, 0)
+        elif event.type == 'WHEELUPMOUSE':
+            self.smooth_factor += 0.1
+            self.smooth_factor = min(self.smooth_factor, 1)
+            self.smooth.factor = self.smooth_factor
 
-            elif self.click_count == 1:
-                scale = 100 if not event.shift else 300
-                self.smooth.factor = self.slider.eval(mouse_co, 'Smooth', unit_scale=scale)
-                self.smooth.factor = max(self.smooth.factor, 0)
+        elif event.type == 'WHEELDOWNMOUSE':
+            self.smooth_factor -= 0.1
+            self.smooth_factor = max(self.smooth_factor, 0)
+            self.smooth.factor = self.smooth_factor
 
-            elif self.click_count == 2:
-                scale = 700 / dist if not event.shift else 1400 / dist
-                self.displace.strength = self.slider.eval(mouse_co, 'Displace', unit_scale=scale)
+        elif event.type in {'LEFTMOUSE', 'SPACE'}:
+            self.slider.remove_handler()
+            return {'FINISHED'}  # Just finish, don't apply modifiers
 
-            elif self.click_count >= 3:
-                if self.displace.strength != 0:
-                    bpy.ops.object.modifier_apply(modifier=self.displace.name)
-                else:
-                    self.obj.modifiers.remove(self.displace)
-                if self.solidify.thickness > 0:
-                    bpy.ops.object.modifier_apply(modifier=self.solidify.name)
-                else:
-                    self.obj.modifiers.remove(self.solidify)
-                if self.smooth.factor > 0:
-                    bpy.ops.object.modifier_apply(modifier=self.smooth.name)
-                else:
-                    self.obj.modifiers.remove(self.smooth)
-                self.bm.free()
-                self.slider.remove_handler()
-                return {'FINISHED'}
+        elif event.type in {'ESC', 'RIGHTMOUSE'}:
+            bpy.ops.object.delete(use_global=False)
+            self.slider.remove_handler()
+            return {'CANCELLED'}
 
         return {'RUNNING_MODAL'}
 
-
-
-import bpy
-
-class DH_OP_MaskSplit(bpy.types.Operator):
-    bl_idname = 'dh.mask_split'
-    bl_label = 'Mask Split'
-    bl_description = 'Split masked and unmasked areas away.'
-    bl_options = {'REGISTER', 'UNDO'}
-
-    keep: bpy.props.EnumProperty(
-        name='Keep',
-        items=(('MASKED', 'Masked', 'Keep darkened parts'),
-               ('UNMASKED', 'Unmasked', 'Keep light parts'),
-               ('BOTH', 'Both', 'Keep both sides in separate objects')),
-        default='BOTH'
-    )
-
-    @classmethod
-    def poll(cls, context):
-        return context.active_object and context.active_object.type == 'MESH'
-
-    def invoke(self, context, event):
-        bpy.ops.ed.undo_push()
-        bpy.ops.object.mode_set(mode='OBJECT')
-        return context.window_manager.invoke_props_dialog(self)
-
-    def execute(self, context):
-        ob = context.active_object
-
-        if self.keep == 'MASKED':
-            bpy.ops.mesh.paint_mask_slice(mask_threshold=0.5, fill_holes=True, new_object=True)
-            context.active_object.select_set(False)
-            ob.select_set(True)
-            bpy.ops.object.delete(use_global=False)
-        elif self.keep == 'UNMASKED':
-            bpy.ops.mesh.paint_mask_slice(mask_threshold=0.5, fill_holes=True, new_object=True)
-            bpy.ops.object.delete(use_global=False)
-        elif self.keep == 'BOTH':
-            bpy.ops.mesh.paint_mask_slice(mask_threshold=0.5, fill_holes=True, new_object=True)
-
-        return {'FINISHED'}
-
-
-
-class MaskDeformRemove(bpy.types.Operator):
-    bl_idname = 'sculpt_tool_kit.mask_deform_remove'
-    bl_label = 'Remove Mask Deform'
-    bl_description = 'Remove Mask Rig'
-    bl_options = {'REGISTER', 'UNDO'}
-
-    apply: bpy.props.BoolProperty(
-        name='Apply',
-        description='Apply Mask deform before remove',
-        default=True
-    )
-
-    @classmethod
-    def poll(cls, context):
-        return context.active_object and context.active_object.type == 'MESH'
-
-    def execute(self, context):
-        if not context.active_object.get('MASK_RIG', False):
-            return {'CANCELLED'}
-
-        if self.apply:
-            bpy.ops.object.convert(target='MESH')
-
-        for item in context.active_object['MASK_RIG']:
-            if type(item) == str:
-                for md in context.active_object.modifiers:
-                    if md.name == md:
-                        if self.apply:
-                            bpy.ops.object.modifier_apply(modifier=md.name)
-                        else:
-                            context.active_object.modifiers.remove(md)
-
-            elif type(item) == bpy.types.Object:
-                bpy.data.objects.remove(item)
-        del context.active_object['MASK_RIG']
-        context.area.tag_redraw()
-        return {'FINISHED'}
-
-
-
-class MaskDeformAdd(bpy.types.Operator):
-    bl_idname = 'sculpt_tool_kit.mask_deform_add'
-    bl_label = 'Add Mask Deform'
-    bl_description = 'Add a rig to deform masked region'
-    bl_options = {'REGISTER', 'UNDO'}
-
-    @classmethod
-    def poll(cls, context):
-        if context.active_object:
-            return context.active_object.type == 'MESH'
-
-    def create_rig(self, context, ob, vg, location, radius=1):
-
-        md = ob.modifiers.new(type='LATTICE', name='MASK_DEFORM')
-        md.vertex_group = vg.name
-        with bpy.types.BlendDataLibraries.load(DEFORM_RIG_PATH) as (data_from, data_to):
-            data_to.objects = ['Lattice', 'DeformPivot', 'DeformManipulator']
-        for d_ob in data_to.objects:
-            context.collection.objects.link(d_ob)
-        md.object = data_to.objects[0]
-        data_to.objects[0].hide_viewport = True
-        data_to.objects[1].location = location
-        data_to.objects[1].scale = (radius,) * 3
-        ob['MASK_RIG'] = list(data_to.objects) + [md.name]
-
-    def execute(self, context):
-        bpy.ops.object.mode_set(mode='OBJECT')
-        self.ob = context.active_object
-        bm, mask = get_bm_and_mask(self.ob.data)
-        vg = self.ob.vertex_groups.new(name='MASK_TO_VG')
-        avg_location = Vector()
-        total = 0
-        for vert in bm.verts:
-            vg.add([vert.index], weight=vert[mask], type='REPLACE')
-            f = vert[mask]
-            f = max(0, f * (1 - f)) + 0.001 * f
-            avg_location += vert.co * f
-            total += f
-        radius = 0
-
-        try:
-            avg_location /= total
-            for vert in bm.verts:
-                f = vert[mask]
-                f = max(0, f * (1 - f)) + 0.001 * f
-                radius += (vert.co - avg_location).length * f
-            radius /= total
-            radius *= sum(self.ob.scale) / 3 * 1.5
-            avg_location = self.ob.matrix_world @ avg_location
-            self.create_rig(context, self.ob, vg, avg_location, radius)
-            self.draw_callback_px = Draw2D()
-            self.draw_callback_px.setup_handler()
-            self.draw_callback_px.add_text('[Return] = Finish, [ESC] = Cancell',
-                                           location=Vector((50, 50)),
-                                           size=15,
-                                           color=(1, 0.5, 0, 1))
-            context.window_manager.modal_handler_add(self)
-            return {'RUNNING_MODAL'}
-
-        except ZeroDivisionError:
-            self.report(type={'ERROR'}, message='Object does not contain any mask')
-            return {'CANCELLED'}
-
-    def modal(self, context, event):
-        if event.type == 'RET':
-            if self.remove_rig(context, apply=True):
-                self.draw_callback_px.remove_handler()
-                return {'FINISHED'}
-
-        if event.type == 'ESC':
-            if self.remove_rig(context, apply=False):
-                self.draw_callback_px.remove_handler()
-                return {'CANCELLED'}
-
-        return {'PASS_THROUGH'}
-
-    def remove_rig(self, context, apply):
-        context.view_layer.objects.active = self.ob
-        self.ob.select_set(True)
-        bpy.ops.sculpt_tool_kit.mask_deform_remove(apply=apply)
-        return True
-
-
-
+    def cancel(self, context):
+        if self.slider:
+            self.slider.remove_handler()
+            self.slider = None

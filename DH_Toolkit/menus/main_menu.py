@@ -1,6 +1,7 @@
 import bpy
 
 from .mesh_menu import draw_mesh, draw_mask
+from .project_menu import draw_project
 from ..icons.icons import load_icons
 from .brush_panel import draw_sculpt_panels
 from ..operators.open_proj_dir import DH_OP_Open_Proj_Dir
@@ -29,11 +30,13 @@ class DH_MT_Main_Menu(bpy.types.Menu):
         draw_sculpt_panels(box, context)
         
         
-        pie.operator("dh.open_proj_dir", text="Open Project", icon='FILE_FOLDER')
+        
 
         # Add buttons directly to the pie menu
         col_center = pie.column()
         col_center.alignment = 'CENTER' # Align items in this column to the center
+        box = col_center.box()
+        draw_project(box, context)
 
         # Add "Open Project" to the middle
         
@@ -43,6 +46,7 @@ class DH_MT_Main_Menu(bpy.types.Menu):
         col_center.separator()
 
         # Add "Project Manager" to the bottom center
+        col_center.operator("dh.open_proj_dir", text="Open Project", icon='FILE_FOLDER')
         col_center.operator("dh.create_project_directories", text="Project Manager", icon='FILE_FOLDER')
        
         
