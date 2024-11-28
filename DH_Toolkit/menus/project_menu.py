@@ -21,7 +21,7 @@ def draw_project(layout, context):
     
     layout.operator("dh.dcc_importer", text="DCC Import")
     layout.operator("dh.dcc_exporter", text="DCC Export")
-    layout.operator("dh.export_obj_multi", text="Multi OBJ Export") # new operator 
+    layout.operator("dh.dcc_split_exporter", text="Multi OBJ Export") # new operator 
 
 
 
