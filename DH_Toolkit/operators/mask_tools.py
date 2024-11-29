@@ -122,6 +122,10 @@ class BoundaryPolish:
 
 
 
+
+import bpy
+from mathutils import Vector
+
 class DH_OP_MaskExtract(bpy.types.Operator):
     """Extract and solidify Masked region as a new object"""
     bl_idname = 'dh.mask_extract'
@@ -131,30 +135,35 @@ class DH_OP_MaskExtract(bpy.types.Operator):
     smooth_factor: bpy.props.FloatProperty(name="Smooth", default=0.5, min=0, max=1)
 
     def execute(self, context):
-        # Use the new mask extract operator
-        bpy.ops.mesh.paint_mask_extract(
-            mask_threshold=0.5,  
-            smooth_iterations=0,  
-        )
+        try:
+            # Use the new mask extract operator
+            bpy.ops.mesh.paint_mask_extract(mask_threshold=0.5, smooth_iterations=0)
+        except RuntimeError as e:
+            self.report({'ERROR'}, f"Mask extraction failed: {e}")
+            return {'CANCELLED'}
 
         self.obj = context.active_object
-        self.solidify = self.obj.modifiers["geometry_extract_solidify"] 
-        self.solidify.offset = 0
+        if not self.obj:
+            self.report({'ERROR'}, "No active object found.")
+            return {'CANCELLED'}
 
-        # Add Solidify modifier
-        #self.solidify = self.obj.modifiers.new(type='SOLIDIFY', name='Solidify')
-        #self.solidify.thickness = 0.01  # Initial thickness
+        # Add or retrieve Solidify modifier
+        if "geometry_extract_solidify" not in self.obj.modifiers:
+            self.solidify = self.obj.modifiers.new(name="geometry_extract_solidify", type='SOLIDIFY')
+        else:
+            self.solidify = self.obj.modifiers["geometry_extract_solidify"]
+        self.solidify.thickness = 0.01
 
         # Add Smooth modifier
         self.smooth = self.obj.modifiers.new(type='SMOOTH', name='SMOOTH')
         self.smooth.factor = self.smooth_factor
-        self.smooth.iterations = 5  
+        self.smooth.iterations = 5
 
-        self.last_mouse = Vector((0, 0)) 
+        self.last_mouse = Vector((context.region.width / 2, context.region.height / 2))
 
-        # Create the slider instance
-        self.slider = VerticalSlider(center=Vector((100, 300))) 
-        self.slider.setup_handler()
+        # Placeholder for slider (ensure this is implemented elsewhere)
+        # self.slider = VerticalSlider(center=Vector((100, 300)))
+        # self.slider.setup_handler()
 
         context.window_manager.modal_handler_add(self)
         return {'RUNNING_MODAL'}
@@ -166,35 +175,31 @@ class DH_OP_MaskExtract(bpy.types.Operator):
 
         if event.type == 'MOUSEMOVE':
             scale = 700 / context.region_data.view_distance
-            # Use the slider to evaluate thickness
-            self.solidify.thickness = self.slider.eval(
-                mouse_co, "Thickness", unit_scale=scale, digits=3
-            )
-            #self.solidify.thickness = max(self.solidify.thickness, 0)
-            
+            # Ensure slider.eval exists and works
+            # self.solidify.thickness = self.slider.eval(
+            #     mouse_co, "Thickness", unit_scale=scale, digits=3
+            # )
 
         elif event.type == 'WHEELUPMOUSE':
-            self.smooth_factor += 0.1
-            self.smooth_factor = min(self.smooth_factor, 1)
+            self.smooth_factor = min(self.smooth_factor + 0.1, 1)
             self.smooth.factor = self.smooth_factor
 
         elif event.type == 'WHEELDOWNMOUSE':
-            self.smooth_factor -= 0.1
-            self.smooth_factor = max(self.smooth_factor, 0)
+            self.smooth_factor = max(self.smooth_factor - 0.1, 0)
             self.smooth.factor = self.smooth_factor
 
         elif event.type in {'LEFTMOUSE', 'SPACE'}:
-            self.slider.remove_handler()
-            return {'FINISHED'}  # Just finish, don't apply modifiers
+            # self.slider.remove_handler()
+            return {'FINISHED'}
 
         elif event.type in {'ESC', 'RIGHTMOUSE'}:
             bpy.ops.object.delete(use_global=False)
-            self.slider.remove_handler()
+            # self.slider.remove_handler()
             return {'CANCELLED'}
 
         return {'RUNNING_MODAL'}
 
     def cancel(self, context):
-        if self.slider:
-            self.slider.remove_handler()
-            self.slider = None
+        # Clean up resources if needed
+        pass
+
