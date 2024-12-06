@@ -21,8 +21,11 @@ def draw_mesh(layout, context):
     
     icon = icons.get("icon_separate")
     layout.operator('mesh.separate',icon_value=icon.icon_id ).type="LOOSE"
-    layout.operator('object.apply_all_modifiers', text="Apply Modifiers" )
     
+    #layout.separator()
+    #icon = icons.get("icon_undo")
+    layout.operator('dh_op.reset_transforms', text="Reset Transforms" )
+
     
     
     

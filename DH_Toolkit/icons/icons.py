@@ -76,12 +76,9 @@ def load_icons():
     custom_icons.load("icon_empty", os.path.join(icons_dir, "empty.png"), 'IMAGE')
     custom_icons.load("icon_remesh", os.path.join(icons_dir, "remesh.png"), 'IMAGE')
     custom_icons.load("icon_decimate", os.path.join(icons_dir, "decimate.png"), 'IMAGE')
-    custom_icons.load("icon_valid", os.path.join(icons_dir, "valid.png"), 'IMAGE')
-    custom_icons.load("icon_import", os.path.join(icons_dir, "import.png"), 'IMAGE')
-    custom_icons.load("icon_blanck", os.path.join(icons_dir, "blanck.png"), 'IMAGE')
-    custom_icons.load("icon_shading", os.path.join(icons_dir, "shading.png"), 'IMAGE')
-    custom_icons.load("icon_muscles", os.path.join(icons_dir, "muscles.png"), 'IMAGE')
-    custom_icons.load("icon_quadriflow", os.path.join(icons_dir, "quadriflow.png"), 'IMAGE')
+    custom_icons.load("icon_delete", os.path.join(icons_dir, "delete_icon.png"), 'IMAGE')
+    custom_icons.load("icon_undo", os.path.join(icons_dir, "undo.png"), 'IMAGE')
+   
 
 
     dh_tools_icon_collections["main"] = custom_icons
