@@ -76,7 +76,7 @@ def load_icons():
     custom_icons.load("icon_empty", os.path.join(icons_dir, "empty.png"), 'IMAGE')
     custom_icons.load("icon_remesh", os.path.join(icons_dir, "remesh.png"), 'IMAGE')
     custom_icons.load("icon_decimate", os.path.join(icons_dir, "decimate.png"), 'IMAGE')
-    custom_icons.load("icon_delete", os.path.join(icons_dir, "delete_icon.png"), 'IMAGE')
+    custom_icons.load("icon_delete", os.path.join(icons_dir, "delete.png"), 'IMAGE')
     custom_icons.load("icon_undo", os.path.join(icons_dir, "undo.png"), 'IMAGE')
    
 
