@@ -1,6 +1,7 @@
 import bpy
 
 from .mesh_menu import draw_mesh, draw_mask
+from .display_menu import draw_display
 from .project_menu import draw_project
 from ..icons.icons import load_icons
 from .brush_panel import draw_sculpt_panels
@@ -28,9 +29,16 @@ class DH_MT_Main_Menu(bpy.types.Menu):
 
         # Right column
         col_right = pie.column()
-        box = col_right.box()
-        col_right.scale_y = 1.5  
-        draw_sculpt_panels(box, context)
+        row = col_right.row()  # Create a row to place items side by side
+        row.scale_y = 1.5
+        
+        box_sculpt = row.box()
+        draw_sculpt_panels(box_sculpt, context)
+
+        box_display = row.box()
+        draw_display(box_display, context)
+
+        
 
         # Add buttons directly to the pie menu
         col_center = pie.column()
@@ -45,6 +53,9 @@ class DH_MT_Main_Menu(bpy.types.Menu):
         # Add "Project Manager" to the bottom center
         col_center.operator("dh.open_proj_dir", text="Open Project", icon='FILE_FOLDER')
         col_center.operator("dh.create_project_directories", text="Project Manager", icon='FILE_FOLDER')
+        col_center.operator("dh.open_preferences", text="Preferences")
+        
+        
 
         # Top center menu
         col_top_center = pie.column()

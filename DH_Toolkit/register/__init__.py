@@ -1,36 +1,33 @@
+import bpy
+
 def register_addon():
     
-    # properties
+    from .preferences import register_pref
+    # Register other components: properties, operators, menus, and keymaps
     from ..property import register_properties
-    
-    #Operators
     from ..operators import register_operators
-    register_operators()
-    
-    # Menus
     from ..menus import register_menus
-    register_menus()
-    
-    #Keymaps
     from .keymap import register_keymap
+    
+    
+
+    register_properties()
+    register_operators()
+    register_menus()
     register_keymap()
-    
-    
+    register_pref()
 
 def unregister_addon():
-    
-    # properties
-    from ..property import register_properties
-    
-    #Operators
-    from ..operators import unregister_operators
-    unregister_operators()
-    
-    #Menus
-    from ..menus import unregister_menus
-    unregister_menus()
-    
-    # keymaps
-    from .keymap import unregister_keymap
-    unregister_keymap()
+    # Unregister preferences
+    from .preferences import unregister_pref
 
+    # Unregister other components
+    from ..operators import unregister_operators
+    from ..menus import unregister_menus
+    from .keymap import unregister_keymap
+    
+
+    unregister_operators()
+    unregister_menus()
+    unregister_keymap()
+    unregister_pref()

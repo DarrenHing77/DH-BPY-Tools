@@ -11,7 +11,7 @@ class DH_OP_dcc_export(bpy.types.Operator):
         name="Export Name",
         description="Name of the exported FBX file",
         default="exported"
-    )
+    ) # type: ignore
 
     def invoke(self, context, event):
         # Show a popup dialog for naming the export file if multiple objects are selected
