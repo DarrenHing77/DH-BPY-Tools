@@ -25,13 +25,12 @@ def draw_mesh(layout, context):
     layout.separator()
     icon = icons.get("icon_undo")
     layout.operator('dh_op.reset_transforms', text="Reset Transforms",icon_value=icon.icon_id )
+    #layout.operator('dh.fix_rotation', text="Fix Rotation")
 
     
     
     
-    #layout.operator("dh.dcc_importer", text="DCC Import")
-    #layout.operator("dh.dcc_exporter", text="DCC Export")
-    #layout.operator("dh.export_obj_multi", text="Multi OBJ Export") # new operator 
+   
 
 
 def draw_mask(layout, context):

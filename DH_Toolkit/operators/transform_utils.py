@@ -20,3 +20,9 @@ class DH_OP_ResetTransforms(bpy.types.Operator):
         self.report({'INFO'}, "Transforms reset to defaults")
         return {'FINISHED'}
 
+
+
+
+
+
+

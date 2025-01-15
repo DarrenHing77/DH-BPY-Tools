@@ -35,7 +35,7 @@ classes = (
     DH_OT_ToggleVisibilityOutliner,
     DH_OP_toggle_lock_camera,
     DH_OP_SwitchToShaderEditor,
-    DH_OP_OpenPrefsOperator
+    DH_OP_OpenPrefsOperator,
     
 )
 

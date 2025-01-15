@@ -2,7 +2,7 @@ import bpy
 import os
 
 class DH_OP_dcc_export(bpy.types.Operator):
-    """Exports selected objects to an FBX file"""
+    """Exports selected objects to an FBX file with version control"""
     bl_idname = "dh.dcc_exporter"
     bl_label = "DCC Exporter"
     bl_options = {'REGISTER', 'UNDO'}
@@ -11,19 +11,34 @@ class DH_OP_dcc_export(bpy.types.Operator):
         name="Export Name",
         description="Name of the exported FBX file",
         default="exported"
+    )  # type: ignore
+
+    mesh_option: bpy.props.EnumProperty(
+        name="Mesh Option",
+        items=[("LOW", "Low", "Save as low-poly"), ("HIGH", "High", "Save as high-poly")],
+        default="LOW",
+    ) # type: ignore
+
+    overwrite: bpy.props.BoolProperty(
+        name="Overwrite Existing",
+        description="If unchecked, it will create a new versioned folder",
+        default=False,
     ) # type: ignore
 
     def invoke(self, context, event):
-        # Show a popup dialog for naming the export file if multiple objects are selected
-        if len(context.selected_objects) > 1:
-            return context.window_manager.invoke_props_dialog(self)
-        return self.execute(context)
+        # If there is a single selected object, set the default export name to the object's name
+        if len(context.selected_objects) == 1:
+            active_object = context.view_layer.objects.active
+            if active_object:
+                self.export_name = active_object.name
+        return context.window_manager.invoke_props_dialog(self)
 
     def draw(self, context):
         layout = self.layout
-        if len(context.selected_objects) > 1:
-            layout.prop(self, "export_name", text="File Name")
-    
+        layout.prop(self, "export_name", text="File Name")
+        layout.prop(self, "mesh_option", text="Mesh Option")
+        layout.prop(self, "overwrite", text="Overwrite Existing")
+
     def execute(self, context):
         # Get the path of the current .blend file
         filepath = bpy.data.filepath
@@ -51,10 +66,27 @@ class DH_OP_dcc_export(bpy.types.Operator):
             if not active_object:
                 self.report({'ERROR'}, "No active object selected for export.")
                 return {'CANCELLED'}
-            object_name = active_object.name
-        
+            
+            # Append the mesh option suffix (_low or _high)
+            object_name = active_object.name + f"_{self.mesh_option.lower()}"
+
+        # Check if we should overwrite or create a new versioned folder
+        version_folder = os.path.join(fbx_directory, "v002")
+        if not self.overwrite:
+            # Check for existing version folders and create a new one if needed
+            version_num = 2
+            while os.path.exists(version_folder):
+                version_num += 1
+                version_folder = os.path.join(fbx_directory, f"v{str(version_num).zfill(3)}")
+            
+            # Create the new version folder
+            os.makedirs(version_folder, exist_ok=True)
+        else:
+            # Ensure the folder exists
+            os.makedirs(fbx_directory, exist_ok=True)
+
         # Set the output FBX file path
-        fbx_file = os.path.join(fbx_directory, f"{object_name}.fbx")
+        fbx_file = os.path.join(version_folder, f"{object_name}.fbx")
         
         # Export the selected objects to the FBX file
         bpy.ops.export_scene.fbx(filepath=fbx_file, use_selection=True)
