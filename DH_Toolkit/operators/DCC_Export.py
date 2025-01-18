@@ -17,13 +17,13 @@ class DH_OP_dcc_export(bpy.types.Operator):
         name="Mesh Option",
         items=[("LOW", "Low", "Save as low-poly"), ("HIGH", "High", "Save as high-poly")],
         default="LOW",
-    ) # type: ignore
+    )
 
     overwrite: bpy.props.BoolProperty(
         name="Overwrite Existing",
         description="If unchecked, it will create a new versioned folder",
         default=False,
-    ) # type: ignore
+    )
 
     def invoke(self, context, event):
         # If there is a single selected object, set the default export name to the object's name
@@ -70,20 +70,37 @@ class DH_OP_dcc_export(bpy.types.Operator):
             # Append the mesh option suffix (_low or _high)
             object_name = active_object.name + f"_{self.mesh_option.lower()}"
 
-        # Check if we should overwrite or create a new versioned folder
-        version_folder = os.path.join(fbx_directory, "v002")
-        if not self.overwrite:
-            # Check for existing version folders and create a new one if needed
-            version_num = 2
-            while os.path.exists(version_folder):
+        # Initialize version folder to `v001`
+        version_folder = os.path.join(fbx_directory, "v001")
+        version_num = 1
+
+        # Check if the file exists in the folder
+        file_exists_low = False
+        file_exists_high = False
+
+        # Check if the `low` or `high` version exists
+        low_file_path = os.path.join(version_folder, f"{object_name.replace('_high', '_low')}.fbx")
+        high_file_path = os.path.join(version_folder, f"{object_name}.fbx")
+
+        if os.path.exists(low_file_path):
+            file_exists_low = True
+
+        if os.path.exists(high_file_path):
+            file_exists_high = True
+
+        # Logic for when to create a new version folder
+        if file_exists_low and file_exists_high:
+            # If both versions exist and `overwrite` is off, create a new version folder
+            if not self.overwrite:
                 version_num += 1
                 version_folder = os.path.join(fbx_directory, f"v{str(version_num).zfill(3)}")
-            
-            # Create the new version folder
+                os.makedirs(version_folder, exist_ok=True)
+        elif file_exists_low or file_exists_high:
+            # If one version exists, place the other version in the same folder
             os.makedirs(version_folder, exist_ok=True)
         else:
-            # Ensure the folder exists
-            os.makedirs(fbx_directory, exist_ok=True)
+            # If neither exists, place both versions in `v001`
+            os.makedirs(version_folder, exist_ok=True)
 
         # Set the output FBX file path
         fbx_file = os.path.join(version_folder, f"{object_name}.fbx")
@@ -93,4 +110,3 @@ class DH_OP_dcc_export(bpy.types.Operator):
         
         self.report({'INFO'}, f"FBX exported to: {fbx_file}")
         return {'FINISHED'}
-
