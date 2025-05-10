@@ -1,218 +1,204 @@
 import bpy
 from ..icons.icons import load_icons
-from .brush_panel import draw_sculpt_panels
-
-def draw_common_brushes(layout, context):
-    layout.label(text='Common Brushes')
-    
-    # Create a grid for compact brush layout
-    grid = layout.grid_flow(row_major=True, columns=2, even_columns=True)
-    
-    # Clay brushes
-    grid.operator("sculpt.brush_select", text="Clay").sculpt_tool = 'CLAY'
-    grid.operator("sculpt.brush_select", text="Clay Strips").sculpt_tool = 'CLAY_STRIPS'
-    grid.operator("sculpt.brush_select", text="Clay Thumb").sculpt_tool = 'CLAY_THUMB'
-    
-    # Draw brushes
-    grid.operator("sculpt.brush_select", text="Draw").sculpt_tool = 'DRAW'
-    grid.operator("sculpt.brush_select", text="Draw Sharp").sculpt_tool = 'DRAW_SHARP'
-    
-    # Scrape and flatten
-    grid.operator("sculpt.brush_select", text="Scrape").sculpt_tool = 'SCRAPE'
-    grid.operator("sculpt.brush_select", text="Flatten").sculpt_tool = 'FLATTEN'
-    
-    # Mask brushes
-    layout.separator()
-    layout.label(text='Mask Brushes')
-    grid = layout.grid_flow(row_major=True, columns=2, even_columns=True)
-    grid.operator("sculpt.brush_select", text="Mask").sculpt_tool = 'MASK'
-    grid.operator("sculpt.brush_select", text="Draw Face Sets").sculpt_tool = 'DRAW_FACE_SETS'
-    
-    # Trim brushes
-    layout.separator()
-    layout.label(text='Trim Brushes')
-    grid = layout.grid_flow(row_major=True, columns=2, even_columns=True)
-    grid.operator("sculpt.brush_select", text="Trim").sculpt_tool = 'TRIM'
-    grid.operator("sculpt.brush_select", text="Fill").sculpt_tool = 'FILL'
-    
-    # Shape modification
-    layout.separator()
-    layout.label(text='Deformation')
-    grid = layout.grid_flow(row_major=True, columns=2, even_columns=True)
-    grid.operator("sculpt.brush_select", text="Grab").sculpt_tool = 'GRAB'
-    grid.operator("sculpt.brush_select", text="Pinch").sculpt_tool = 'PINCH'
-    grid.operator("sculpt.brush_select", text="Smooth").sculpt_tool = 'SMOOTH'
-
-def draw_mask_tools(layout, context):
-    layout.label(text='Mask Tools')
-    layout.operator('dh.mask_extract', text="Extract Mask")
-    layout.operator('mesh.paint_mask_slice', text="Mask Slice")
-    
-    # Add mask utilities
-    row = layout.row(align=True)
-    row.operator("sculpt.mask_flood_fill", text="Fill").mode = 'VALUE'
-    row.operator("sculpt.mask_flood_fill", text="Clear").mode = 'VALUE'
-    
-    row = layout.row(align=True)
-    row.operator("sculpt.mask_flood_fill", text="Invert").mode = 'INVERT'
-    row.operator("paint.mask_lasso_gesture", text="Lasso").mode = 'VALUE'
-
-def draw_dyntopo_tools(layout, context):
-    layout.label(text='Dynamic Topology')
-    
-    # Check if dyntopo is enabled
-    if context.sculpt_object:
-        dyntopo_enabled = context.sculpt_object.use_dynamic_topology_sculpting
-        
-        # Enable/disable button
-        if dyntopo_enabled:
-            layout.operator("sculpt.dynamic_topology_toggle", text="Disable Dyntopo")
-        else:
-            layout.operator("sculpt.dynamic_topology_toggle", text="Enable Dyntopo")
-        
-        # Dyntopo settings if enabled
-        if dyntopo_enabled:
-            sculpt = context.tool_settings.sculpt
-            layout.prop(sculpt, "detail_type_method", text="")
-            
-            if sculpt.detail_type_method == 'CONSTANT':
-                layout.prop(sculpt, "constant_detail_resolution")
-            elif sculpt.detail_type_method == 'BRUSH':
-                layout.prop(sculpt, "detail_percent")
-            elif sculpt.detail_type_method == 'RELATIVE':
-                layout.prop(sculpt, "detail_size")
-                
-            # Detail tools
-            layout.separator()
-            row = layout.row(align=True)
-            row.operator("sculpt.detail_flood_fill", text="Detail Flood Fill")
-            row.operator("sculpt.sample_detail_size", text="Sample Detail")
-
-def draw_multires_tools(layout, context):
-    layout.label(text='Multires')
-    
-    # Add level controls
-    row = layout.row(align=True)
-    row.operator('dh.set_multires_viewport_max', text="Set Max")
-    row.operator('dh.set_multires_viewport_zero', text="Set Min")
-    
-    # Add basic multires operations
-    ob = context.active_object
-    if ob and ob.modifiers:
-        multires = next((m for m in ob.modifiers if m.type == 'MULTIRES'), None)
-        if multires:
-            # Show current level
-            layout.separator()
-            if hasattr(multires, "levels"):
-                layout.label(text=f"Current Level: {multires.levels}/{multires.total_levels}")
-                
-            # Add level operations
-            row = layout.row(align=True)
-            row.operator("object.multires_subdivide", text="Subdivide")
-            row.operator("object.multires_higher_levels_delete", text="Del Higher")
-            
-            # Apply button
-            layout.operator("object.multires_apply_base", text="Apply Base")
-
-def draw_symmetry_tools(layout, context):
-    layout.label(text='Symmetry')
-    
-    # Access sculpt tool settings
-    sculpt = context.tool_settings.sculpt
-    
-    # Symmetry toggles
-    row = layout.row(align=True)
-    row.prop(sculpt, "use_symmetry_x", text="X", toggle=True)
-    row.prop(sculpt, "use_symmetry_y", text="Y", toggle=True)
-    row.prop(sculpt, "use_symmetry_z", text="Z", toggle=True)
-    
-    # Symmetrize options
-    layout.separator()
-    row = layout.row(align=True)
-    row.operator("sculpt.symmetrize", text="+X to -X").direction = 'POSITIVE_X'
-    row.operator("sculpt.symmetrize", text="-X to +X").direction = 'NEGATIVE_X'
-    
-    # Lock options if available
-    if hasattr(sculpt, "lock_x") or hasattr(sculpt, "lock_y") or hasattr(sculpt, "lock_z"):
-        layout.separator()
-        layout.label(text="Lock:")
-        row = layout.row(align=True)
-        if hasattr(sculpt, "lock_x"):
-            row.prop(sculpt, "lock_x", text="X", toggle=True)
-        if hasattr(sculpt, "lock_y"):
-            row.prop(sculpt, "lock_y", text="Y", toggle=True)
-        if hasattr(sculpt, "lock_z"):
-            row.prop(sculpt, "lock_z", text="Z", toggle=True)
-
-def draw_remesh_tools(layout, context):
-    layout.label(text='Remesh')
-    layout.operator('dh.decimate', text="Decimate")
-    
-    # Add remesh options
-    ob = context.active_object
-    if ob and ob.type == 'MESH':
-        layout.operator("object.voxel_remesh", text="Voxel Remesh")
-        layout.operator("object.quadriflow_remesh", text="Quad Remesh")
-        
-        # Voxel size if available
-        if hasattr(context.scene, "remesh_voxel_size"):
-            layout.prop(context.scene, "remesh_voxel_size", text="Voxel Size")
-            
-        # Smooth iterations
-        layout.operator("sculpt.sample_detail_size", text="Sample Detail")
-
 
 class DH_MT_Sculpt_Menu(bpy.types.Menu):
+    """Context-specific pie menu for Sculpt Mode"""
     bl_idname = "DH_MT_Sculpt_Menu"
     bl_label = "DH Sculpt Toolkit"
 
     def draw(self, context):
         pie = self.layout.menu_pie()
         
-        # LEFT - Brush Panels (from your existing code)
+        # LEFT - Brush Settings
         col_left = pie.column()
         box = col_left.box()
-        box.label(text='Brush Panels')
-        # Use your existing draw_sculpt_panels function
-        draw_sculpt_panels(box, context)
+        box.label(text='Brush Settings')
         
-        # RIGHT - Common Brushes
+        # Use direct access to brush settings
+        if context.tool_settings and context.tool_settings.sculpt:
+            brush = context.tool_settings.sculpt.brush
+            if brush:
+                # Show brush strength and size directly
+                box.prop(brush, "strength", text="Strength")
+                box.prop(brush, "size", text="Size")
+                
+                # Add Front Faces Only option
+                if hasattr(brush, "use_frontface"):
+                    box.prop(brush, "use_frontface", text="Front Faces Only")
+                
+                # Add Automasking options
+                if hasattr(brush, "use_automasking_topology"):
+                    box.prop(brush, "use_automasking_topology", text="Topology Automasking")
+                
+                # Add Stabilize Stroke options
+                box.separator()
+                box.label(text="Stroke:")
+                
+                # Stabilize
+                if hasattr(brush, "use_smooth_stroke"):
+                    row = box.row()
+                    row.prop(brush, "use_smooth_stroke", text="Stabilize Stroke")
+                    
+                    # Show radius and factor if stabilize is enabled
+                    if brush.use_smooth_stroke:
+                        col = box.column(align=True)
+                        col.prop(brush, "smooth_stroke_radius", text="Radius", slider=True)
+                        col.prop(brush, "smooth_stroke_factor", text="Factor", slider=True)
+                    
+                # Add falloff curve if available
+                box.separator()
+                if hasattr(brush, "curve"):
+                    box.label(text="Falloff Curve")
+                    box.template_curve_mapping(brush, "curve", brush=True)
+        
+        # RIGHT - Brush Selection and Symmetry in the same column
         col_right = pie.column()
-        box = col_right.box()
-        draw_common_brushes(box, context)
         
-        # BOTTOM - Mask and Remesh Tools
+        # Brush selection box
+        brush_box = col_right.box()
+        brush_box.label(text='Brushes')
+        
+        # Create a grid for essential brushes
+        grid = brush_box.grid_flow(row_major=True, columns=3, even_columns=True)
+        
+        # Use context_set_enum operator to set the sculpt tool
+        # This is a more reliable approach in Blender 4.4
+        brushes = [
+            ("Draw", "DRAW"),
+            ("Clay", "CLAY"),
+            ("Clay Strips", "CLAY_STRIPS"),
+            ("Grab", "GRAB"),
+            ("Smooth", "SMOOTH"),
+            ("Flatten", "FLATTEN"),
+            ("Pinch", "PINCH"),
+            ("Crease", "CREASE"),
+            ("Mask", "MASK")
+        ]
+        
+        for name, tool in brushes:
+            op = grid.operator("wm.context_set_enum", text=name)
+            op.data_path = "tool_settings.sculpt.sculpt_tool"
+            op.value = tool
+        
+        # Add a separator between brushes and symmetry
+        col_right.separator()
+        
+        # Symmetry box
+        sym_box = col_right.box()
+        sym_box.label(text='Symmetry')
+        
+        # Symmetry toggles
+        sculpt = context.tool_settings.sculpt
+        row = sym_box.row(align=True)
+        row.prop(sculpt, "use_symmetry_x", text="X", toggle=True)
+        row.prop(sculpt, "use_symmetry_y", text="Y", toggle=True)
+        row.prop(sculpt, "use_symmetry_z", text="Z", toggle=True)
+        
+        # Symmetrize operation
+        row = sym_box.row(align=True)
+        row.operator("sculpt.symmetrize", text="+X to -X")
+        row.operator("sculpt.symmetrize", text="-X to +X")
+        
+        # BOTTOM - Mask Tools with Box, Lasso, and Polyline
         col_bottom = pie.column()
+        box = col_bottom.box()
+        box.label(text='Mask Tools')
         
-        # Mask Tools on top
-        box1 = col_bottom.box()
-        draw_mask_tools(box1, context)
+        # Mask extraction tools
+        row = box.row(align=True)
+        row.operator('dh.mask_extract', text="Extract Mask")
+        row.operator('mesh.paint_mask_slice', text="Mask Slice")
         
-        col_bottom.separator()
+        # Masking brushes
+        box.label(text="Mask Brushes:")
+        row = box.row(align=True)
+        row.operator("paint.mask_box_gesture", text="Box").mode = 'VALUE'
+        row.operator("paint.mask_lasso_gesture", text="Lasso").mode = 'VALUE'
         
-        # Remesh Tools below
-        box2 = col_bottom.box()
-        draw_remesh_tools(box2, context)
+        # Try to use polyline if it exists
+        if hasattr(bpy.ops.paint, "mask_line_gesture"):
+            row.operator("paint.mask_line_gesture", text="Line").mode = 'VALUE'
         
-        # TOP - Dyntopo Tools
+        # Mask flood fill operations
+        box.separator()
+        box.label(text="Mask Operations:")
+        row = box.row(align=True)
+        op = row.operator("paint.mask_flood_fill", text="Fill")
+        op.mode = 'VALUE'
+        op.value = 1.0
+        
+        op = row.operator("paint.mask_flood_fill", text="Clear")
+        op.mode = 'VALUE'
+        op.value = 0.0
+        
+        op = row.operator("paint.mask_flood_fill", text="Invert")
+        op.mode = 'INVERT'
+        
+        # TOP - Dyntopo and Multires in the same column
         col_top = pie.column()
-        box = col_top.box()
-        draw_dyntopo_tools(box, context)
         
-        # BOTTOM-LEFT - Multires Tools
-        col_bl = pie.column()
-        box = col_bl.box()
-        draw_multires_tools(box, context)
+        # Dyntopo box
+        dyntopo_box = col_top.box()
+        dyntopo_box.label(text='Dynamic Topology')
         
-        # BOTTOM-RIGHT - Symmetry Tools
-        col_br = pie.column()
-        box = col_br.box()
-        draw_symmetry_tools(box, context)
+        # Dyntopo toggle
+        if context.sculpt_object:
+            dyntopo_enabled = context.sculpt_object.use_dynamic_topology_sculpting
+            
+            if dyntopo_enabled:
+                dyntopo_box.operator("sculpt.dynamic_topology_toggle", text="Disable Dyntopo")
+            else:
+                dyntopo_box.operator("sculpt.dynamic_topology_toggle", text="Enable Dyntopo")
+            
+            # Add detail settings if dyntopo is enabled
+            if dyntopo_enabled:
+                # Check if the sculpt context has these properties
+                sculpt = context.tool_settings.sculpt
+                if hasattr(sculpt, "detail_type_method"):
+                    dyntopo_box.prop(sculpt, "detail_type_method", text="")
+                    
+                    # Add detail size based on method
+                    if hasattr(sculpt, "constant_detail_resolution") and sculpt.detail_type_method == 'CONSTANT':
+                        dyntopo_box.prop(sculpt, "constant_detail_resolution", text="Resolution")
+                    elif hasattr(sculpt, "detail_percent") and sculpt.detail_type_method == 'BRUSH':
+                        dyntopo_box.prop(sculpt, "detail_percent", text="Detail Percent")
+                    elif hasattr(sculpt, "detail_size") and sculpt.detail_type_method == 'RELATIVE':
+                        dyntopo_box.prop(sculpt, "detail_size", text="Detail Size")
+                
+                # Add detail operations
+                dyntopo_box.operator("sculpt.detail_flood_fill", text="Detail Flood Fill")
+                dyntopo_box.operator("sculpt.sample_detail_size", text="Sample Detail Size")
         
-        # TOP-LEFT - empty to ensure good spacing
+        # Add a separator between dyntopo and multires
+        col_top.separator()
+        
+        # Multires box
+        multires_box = col_top.box()
+        multires_box.label(text='Multires')
+        multires_box.operator('dh.set_multires_viewport_max', text="Set Multires Max")
+        multires_box.operator('dh.set_multires_viewport_zero', text="Set Multires Min")
+        
+        # Add basic multires operations if there's a multires modifier
+        ob = context.active_object
+        if ob and ob.modifiers:
+            multires = next((m for m in ob.modifiers if m.type == 'MULTIRES'), None)
+            if multires:
+                multires_box.operator("object.multires_subdivide", text="Subdivide")
+                multires_box.operator("object.multires_higher_levels_delete", text="Delete Higher")
+        
+        # Leave all corner sections empty
+        # TOP-LEFT - empty
         col_tl = pie.column()
-        # Intentionally empty
+        # Empty
         
-        # TOP-RIGHT - empty to ensure good spacing
+        # TOP-RIGHT - empty
         col_tr = pie.column()
-        # Intentionally empty
+        # Empty
+        
+        # BOTTOM-LEFT - empty
+        col_bl = pie.column()
+        # Empty
+        
+        # BOTTOM-RIGHT - empty
+        col_br = pie.column()
+        # Empty
