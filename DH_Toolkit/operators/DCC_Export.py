@@ -1,5 +1,8 @@
 import bpy
 import os
+import re # Import the regular expression module
+import subprocess # Import for opening the folder
+import sys # Import for checking the operating system
 
 class DH_OP_dcc_export(bpy.types.Operator):
     """Exports selected objects to an FBX file with version control"""
@@ -9,24 +12,30 @@ class DH_OP_dcc_export(bpy.types.Operator):
 
     export_name: bpy.props.StringProperty(
         name="Export Name",
-        description="Name of the exported FBX file",
+        description="Name of the exported FBX file (without version/suffix)",
         default="exported"
-    )  # type: ignore
+    ) # type: ignore
 
     mesh_option: bpy.props.EnumProperty(
         name="Mesh Option",
         items=[("LOW", "Low", "Save as low-poly"), ("HIGH", "High", "Save as high-poly")],
         default="LOW",
-    )
+    ) # type: ignore
 
     overwrite: bpy.props.BoolProperty(
-        name="Overwrite Existing",
-        description="If unchecked, it will create a new versioned folder",
+        name="Overwrite Latest Version",
+        description="If unchecked, it will create a new versioned folder. If checked, it uses the latest version folder.",
         default=False,
-    )
+    ) # type: ignore
+
+    open_folder: bpy.props.BoolProperty(
+        name="Open Folder After Export",
+        description="Opens the containing folder in your file explorer after a successful export",
+        default=True, # Set to True by default
+    ) # type: ignore
 
     def invoke(self, context, event):
-        # If there is a single selected object, set the default export name to the object's name
+        # If there is a single selected object, set the default export name
         if len(context.selected_objects) == 1:
             active_object = context.view_layer.objects.active
             if active_object:
@@ -37,49 +46,91 @@ class DH_OP_dcc_export(bpy.types.Operator):
         layout = self.layout
         layout.prop(self, "export_name", text="File Name")
         layout.prop(self, "mesh_option", text="Mesh Option")
-        layout.prop(self, "overwrite", text="Overwrite Existing")
+        layout.prop(self, "overwrite", text="Overwrite Latest")
+        layout.prop(self, "open_folder", text="Open Folder After") # Add the new checkbox
 
     def execute(self, context):
-        # Get the path of the current .blend file
+        # --- 1. Get Base Path ---
         filepath = bpy.data.filepath
         if not filepath:
             self.report({'ERROR'}, "Please save the .blend file before exporting.")
             return {'CANCELLED'}
-        
-        # Get the directory of the current .blend file
+
         directory = os.path.dirname(filepath)
-        
-        # Go up one directory and create an "FBX" folder
         parent_directory = os.path.abspath(os.path.join(directory, os.pardir))
         fbx_directory = os.path.join(parent_directory, "FBX")
-        
-        # Ensure the FBX folder exists
         os.makedirs(fbx_directory, exist_ok=True)
 
-        # Determine the export file name with the mesh_option suffix
+        # --- 2. Determine File Name ---
         object_name = f"{self.export_name}_{self.mesh_option.lower()}"
+        fbx_filename = f"{object_name}.fbx"
 
-        # Initialize version folder to `v001`
-        version_folder = os.path.join(fbx_directory, "v001")
-        version_num = 1
+        # --- 3. Determine Version Folder ---
+        version_num = 0
+        latest_version_folder = ""
 
-        # Check if the file exists in the folder
-        file_exists = False
-        fbx_file = os.path.join(version_folder, f"{object_name}.fbx")
+        # Find the highest existing version number
+        try:
+            version_pattern = re.compile(r"^v(\d{3})$") # Matches "v" followed by 3 digits
+            for item in os.listdir(fbx_directory):
+                item_path = os.path.join(fbx_directory, item)
+                if os.path.isdir(item_path):
+                    match = version_pattern.match(item)
+                    if match:
+                        num = int(match.group(1))
+                        if num > version_num:
+                            version_num = num
+        except FileNotFoundError:
+             # This shouldn't happen since we create fbx_directory, but handle just in case
+             pass
 
-        if os.path.exists(fbx_file):
-            file_exists = True
-
-        # Logic for when to create a new version folder
-        if file_exists and not self.overwrite:
-            version_num += 1
-            version_folder = os.path.join(fbx_directory, f"v{str(version_num).zfill(3)}")
-            os.makedirs(version_folder, exist_ok=True)
+        # Decide which version number to use
+        if self.overwrite:
+            # Use the latest version (or v001 if none exist)
+            version_to_use = max(1, version_num)
         else:
-            os.makedirs(version_folder, exist_ok=True)
+            # Use the next version number
+            version_to_use = version_num + 1
 
-        # Export the selected objects to the FBX file
-        bpy.ops.export_scene.fbx(filepath=fbx_file, use_selection=True)
-        
-        self.report({'INFO'}, f"FBX exported to: {fbx_file}")
+        version_folder = os.path.join(fbx_directory, f"v{str(version_to_use).zfill(3)}")
+        os.makedirs(version_folder, exist_ok=True) # Create the folder if it doesn't exist
+
+        # --- 4. Set Full Export Path ---
+        export_path = os.path.join(version_folder, fbx_filename)
+
+        # --- 5. Export ---
+        try:
+            bpy.ops.export_scene.fbx(
+                filepath=export_path,
+                use_selection=True,
+                # Add any other specific FBX settings you need here
+                # e.g., apply_scale_options='FBX_SCALE_ALL', object_types={'MESH', 'ARMATURE'}, etc.
+                check_existing=False # We handle versioning, let Blender overwrite if needed
+            )
+        except Exception as e:
+            self.report({'ERROR'}, f"Export failed: {e}")
+            return {'CANCELLED'}
+
+        self.report({'INFO'}, f"FBX exported to: {export_path}")
+
+        # --- 6. Open Folder (Optional) ---
+        if self.open_folder:
+            self.open_file_explorer(version_folder)
+
         return {'FINISHED'}
+
+    def open_file_explorer(self, path):
+        """Opens the given path in the system's file explorer."""
+        real_path = os.path.realpath(path) # Get the absolute path
+        try:
+            if sys.platform == "win32":
+                subprocess.Popen(['explorer', real_path])
+            elif sys.platform == "darwin": # macOS
+                subprocess.Popen(['open', real_path])
+            else: # Linux and other Unix-like systems
+                subprocess.Popen(['xdg-open', real_path])
+        except Exception as e:
+            print(f"Could not open folder: {e}")
+            self.report({'WARNING'}, f"Could not open folder: {e}")
+
+
