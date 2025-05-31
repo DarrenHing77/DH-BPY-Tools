@@ -74,6 +74,10 @@ class DH_MT_Sculpt_Menu(bpy.types.Menu):
 
         
 
+
+
+        
+
         box.separator()
         box.label(text="Mask Operations:")
         row = box.row(align=True)
@@ -88,6 +92,10 @@ class DH_MT_Sculpt_Menu(bpy.types.Menu):
 
         op = row.operator("paint.mask_flood_fill", text="Invert")
         op.mode = 'INVERT'
+        box.separator()
+        box.label(text='Preferences')
+        row = box.row(align=True)
+        row.operator("screen.userpref_show", text="Open Preferences")
 
         # TOP - Dyntopo and Multires
         col_top = pie.column()
