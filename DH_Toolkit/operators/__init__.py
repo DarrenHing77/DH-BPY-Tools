@@ -13,6 +13,7 @@ from .multires_tools import SetMultiresViewportLevelsMax, SetMultiresViewportLev
 from .modifier_tools import DH_OP_CopyModifiers
 from .transform_utils import DH_OP_ResetTransforms
 from .display_utils import DH_OP_ToggleWireframe, DH_OT_ToggleVisibilityOutliner, DH_OP_toggle_lock_camera, DH_OP_SwitchToShaderEditor
+from .smart_hide import DH_OT_smart_hide
 
 # classes tuple
 classes = (
@@ -34,6 +35,7 @@ classes = (
     DH_OT_ToggleVisibilityOutliner,
     DH_OP_toggle_lock_camera,
     DH_OP_SwitchToShaderEditor,
+    DH_OT_smart_hide,
     
     
 )

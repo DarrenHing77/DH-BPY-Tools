@@ -26,7 +26,7 @@ class DH_MT_Sculpt_Menu(bpy.types.Menu):
             ("Smooth", "brushes\\essentials_brushes-mesh_sculpt.blend\\Brush\\Smooth"),
             ("Scrape", "brushes\\essentials_brushes-mesh_sculpt.blend\\Brush\\Scrape/Fill"),
             ("Pinch", "brushes\\essentials_brushes-mesh_sculpt.blend\\Brush\\Pinch"),
-            ("Crease", "brushes\\essentials_brushes-mesh_sculpt.blend\\Brush\\Crease"),
+            ("Crease Sharp", "brushes\\essentials_brushes-mesh_sculpt.blend\\Brush\\Crease Sharp"),
             ("Mask", "brushes\\essentials_brushes-mesh_sculpt.blend\\Brush\\Mask"),
         ]
 
@@ -92,6 +92,8 @@ class DH_MT_Sculpt_Menu(bpy.types.Menu):
 
         op = row.operator("paint.mask_flood_fill", text="Invert")
         op.mode = 'INVERT'
+
+
         box.separator()
         box.label(text='Preferences')
         row = box.row(align=True)
