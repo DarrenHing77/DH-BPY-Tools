@@ -82,22 +82,28 @@ class Draw2D:
         bpy.types.SpaceView3D.draw_handler_remove(self.handler, 'WINDOW')
 
     def draw(self):
-        bgl.glEnable(bgl.GL_BLEND)
+        gpu.state.blend_set('ALPHA')  # replaces bgl.glEnable(bgl.GL_BLEND)
+
         if self.batch_redraw or not self.batch:
             self.update_batch()
-        bgl.glLineWidth(self.thickness)
+
+        gpu.state.line_width_set(self.thickness)  # replaces bgl.glLineWidth
         self.shader.bind()
         self.batch.draw(self.shader)
-        bgl.glLineWidth(1)
+        gpu.state.line_width_set(1)
 
         for text, location, size, color, dpi in self.text:
             blf.position(0, location[0], location[1], 0)
-            blf.size(0, size, dpi)
+            blf.size(0, size)
             blf.color(0, *color)
             blf.shadow(0, 3, *self.font_shadow)
             blf.draw(0, text)
+            blf.position(0, 20, 40, 0)
+        blf.size(0, 16, 72)
+        blf.color(0, 1, 1, 1, 1)  # White
+        blf.draw(0, f"Thickness: {self.thickness}")
 
-        bgl.glDisable(bgl.GL_BLEND)
+        gpu.state.blend_set('NONE')  # replaces bgl.glDisable(bgl.GL_BLEND)
 
 
 class VerticalSlider(Draw2D):
