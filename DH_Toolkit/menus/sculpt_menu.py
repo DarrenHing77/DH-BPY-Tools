@@ -26,7 +26,7 @@ class DH_MT_Sculpt_Menu(bpy.types.Menu):
             ("Smooth", "brushes\\essentials_brushes-mesh_sculpt.blend\\Brush\\Smooth"),
             ("Scrape", "brushes\\essentials_brushes-mesh_sculpt.blend\\Brush\\Scrape/Fill"),
             ("Pinch", "brushes\\essentials_brushes-mesh_sculpt.blend\\Brush\\Pinch"),
-            ("Crease Sharp", "brushes\\essentials_brushes-mesh_sculpt.blend\\Brush\\Crease Sharp"),
+            ("Crease", "brushes\\essentials_brushes-mesh_sculpt.blend\\Brush\\Crease"),
             ("Mask", "brushes\\essentials_brushes-mesh_sculpt.blend\\Brush\\Mask"),
         ]
 
@@ -74,10 +74,6 @@ class DH_MT_Sculpt_Menu(bpy.types.Menu):
 
         
 
-
-
-        
-
         box.separator()
         box.label(text="Mask Operations:")
         row = box.row(align=True)
@@ -92,12 +88,6 @@ class DH_MT_Sculpt_Menu(bpy.types.Menu):
 
         op = row.operator("paint.mask_flood_fill", text="Invert")
         op.mode = 'INVERT'
-
-
-        box.separator()
-        box.label(text='Preferences')
-        row = box.row(align=True)
-        row.operator("screen.userpref_show", text="Open Preferences")
 
         # TOP - Dyntopo and Multires
         col_top = pie.column()
