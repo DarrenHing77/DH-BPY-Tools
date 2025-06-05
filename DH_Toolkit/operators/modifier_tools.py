@@ -1,5 +1,8 @@
 import bpy
 
+
+# copy modifiers with settings
+
 class DH_OP_CopyModifiers(bpy.types.Operator):
     """Copy Modifiers from the First Selected Object to Others"""  # Tooltip
     bl_idname = "dh_op.copy_modifiers"
@@ -42,12 +45,23 @@ class DH_OP_CopyModifiers(bpy.types.Operator):
         self.report({'INFO'}, f"Copied modifiers from {first_selected.name} to {len(selected_objects)} objects.")
         return {'FINISHED'}
 
-# Register and Unregister Functions
-#def register():
-#    bpy.utils.register_class(DH_OP_CopyModifiers)
-#
-#def unregister():
-#    bpy.utils.unregister_class(DH_OP_CopyModifiers)
-#
-#if __name__ == "__main__":
-#    register()
+
+
+## toggle modifier vis
+
+class DH_OP_toggle_modifiers_visibility(bpy.types.Operator):
+    bl_idname = "dh_op.toggle_modifiers_visibility"
+    bl_label = "Toggle Modifiers Visibility"
+    bl_description = "Toggles visibility of all modifiers in the viewport for selected objects"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    def execute(self, context):
+        # Get the current state of the first object’s first modifier for toggle logic
+        toggle_state = not context.selected_objects[0].modifiers[0].show_viewport if context.selected_objects else False
+
+        # Toggle visibility for all modifiers of selected objects
+        for obj in context.selected_objects:
+            for mod in obj.modifiers:
+                mod.show_viewport = toggle_state
+        
+        return {'FINISHED'}
