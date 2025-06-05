@@ -36,7 +36,11 @@ class DH_OT_ToggleVisibilityOutliner(bpy.types.Operator):
     bl_description = "Toggle the visibility (eye icon) for selected objects in the Outliner"
 
     def execute(self, context):
-        selected_ids = bpy.context.selected_ids  # Get selected items in the Outliner
+        # Prefer selected_ids from the passed-in context (Blender 3.6+)
+        # but fall back to bpy.context for compatibility with older versions
+        selected_ids = getattr(context, "selected_ids", None)
+        if selected_ids is None:
+            selected_ids = getattr(bpy.context, "selected_ids", None)
 
         if not selected_ids:
             self.report({'WARNING'}, "No objects selected in the Outliner.")
