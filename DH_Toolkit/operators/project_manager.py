@@ -14,8 +14,39 @@ def create_project_directories(project_name, directory, folders):
     # Create the main project directory
     os.makedirs(project_path, exist_ok=True)
 
+
     # Create all subdirectories
     for subdir in folders:
+=======
+    # Define the subdirectory structure
+    subdirectories = [
+        "01_Ref",
+        os.path.join("01_Ref", "PR"),
+        "02_Photoshop",
+        os.path.join("02_Photoshop", "PSD"),
+        os.path.join("02_Photoshop", "images"),
+        "03_Blender",
+        os.path.join("03_Blender", "Scenes"),
+        os.path.join("03_Blender", "FBX"),
+        os.path.join("03_Blender", "Textures"),
+        os.path.join("03_Blender", "Renders"),
+        "04_Substance",
+        os.path.join("04_Substance", "Scenes"),
+        os.path.join("04_Substance", "FBX"),
+        os.path.join("04_Substance", "Textures"),
+        os.path.join("04_Substance", "Textures", "01_Painter"),
+        os.path.join("04_Substance", "Textures", "02_Designer"),
+        os.path.join("04_Substance", "SBS"),
+        os.path.join("04_Substance", "SBSAR"),
+        "05_Resolve",
+        os.path.join("05_Resolve", "Resources"),
+        os.path.join("05_Resolve", "Stills"),
+        os.path.join("05_Resolve", "Videos"),
+        "06_Daz"
+    ]
+
+    # Create subdirectories
+    for subdir in subdirectories:
         subdir_path = os.path.join(project_path, subdir)
         os.makedirs(subdir_path, exist_ok=True)
 
