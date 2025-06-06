@@ -8,7 +8,7 @@ from ..icons import *
 from .brush_panel import draw_sculpt_panels
 from .modifers_multires_menu import draw_modifiers_multires_menu
 from ..operators.open_proj_dir import DH_OP_Open_Proj_Dir
-from ..operators.project_manager import DH_OP_Proj_Manage, DH_OP_Project_Manager_Popup, DH_OP_CreateProjectDirectories
+from DH_Project_Manager import DH_OT_CreateProjectDirectories
 from ..operators.multires_tools import SetMultiresViewportLevelsZero, SetMultiresViewportLevelsMax
 
 

@@ -8,14 +8,10 @@ from .open_proj_dir import DH_OP_Open_Proj_Dir
 from .DCC_Export import DH_OP_dcc_export
 from .mask_tools import DH_OP_MaskExtract
 from .export_fbx_multi import DH_OP_dcc_split_export
-from .project_manager import (
-    DH_OP_CreateProjectDirectories,
-    DH_OP_Proj_Manage,
-    DH_OP_Project_Manager_Popup,
-    PM_FolderItem,
-    DH_PM_AddFolder,
-    DH_PM_AddSubfolder,
-    DH_PM_RemoveFolder,
+from DH_Project_Manager import (
+    DH_OT_CreateProjectDirectories,
+    DH_OT_GetProjectDetails,
+    DH_OT_ProjectManager_Popup,
 )
 from .multires_tools import SetMultiresViewportLevelsMax, SetMultiresViewportLevelsZero
 from .modifier_tools import DH_OP_CopyModifiers, DH_OP_toggle_modifiers_visibility
@@ -27,7 +23,9 @@ from .utils import DH_OT_smart_hide
 
 # classes tuple
 classes = (
-    PM_FolderItem,
+    DH_OT_GetProjectDetails,
+    DH_OT_ProjectManager_Popup,
+    DH_OT_CreateProjectDirectories,
     DH_OP_dcc_import,
     DH_OP_Decimate,
     SetDiffuseColorOperator,
@@ -36,25 +34,17 @@ classes = (
     DH_OP_Open_Proj_Dir,
     DH_OP_dcc_export,
     DH_OP_MaskExtract,
-    DH_OP_dcc_split_export, 
+    DH_OP_dcc_split_export,
     SetMultiresViewportLevelsMax,
     SetMultiresViewportLevelsZero,
-    DH_OP_CreateProjectDirectories,
-    DH_OP_Proj_Manage,
-    DH_OP_Project_Manager_Popup,
-    DH_PM_AddFolder,
-    DH_PM_AddSubfolder,
-    DH_PM_RemoveFolder,
     DH_OP_ToggleWireframe,
     DH_OT_ToggleVisibilityOutliner,
     DH_OP_toggle_lock_camera,
     DH_OP_SwitchToShaderEditor,
     DH_OT_smart_hide,
     DH_OP_toggle_modifiers_visibility,
-    
-    
-    
 )
+
 
 # Registering the operators
 def register_operators():

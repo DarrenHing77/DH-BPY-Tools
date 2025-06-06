@@ -1,6 +1,5 @@
 import bpy
 import os
-import tempfile
 
 def create_project_directories(context, project_name, directory):
     # Use the provided project name and directory
@@ -35,8 +34,8 @@ def create_project_directories(context, project_name, directory):
 
 
 # Operator to get project name and directory from the user
-class GetProjectDetailsOperator(bpy.types.Operator):
-    bl_idname = "object.get_project_details"
+class DH_OT_GetProjectDetails(bpy.types.Operator):
+    bl_idname = "dh.get_project_details"
     bl_label = "Get Project Details"
 
     project_name: bpy.props.StringProperty(name="Project Name", default="MyProject")
@@ -57,7 +56,7 @@ class GetProjectDetailsOperator(bpy.types.Operator):
             filepath = os.path.join(scene_dir, f"{self.project_name}_v001.blend")
             bpy.ops.wm.save_as_mainfile(filepath=filepath)
 
-        bpy.ops.object.project_manager_popup(
+        bpy.ops.dh.project_manager_popup(
             'INVOKE_DEFAULT',
             project_name=self.project_name,
             directory=self.directory
@@ -68,8 +67,8 @@ class GetProjectDetailsOperator(bpy.types.Operator):
         return context.window_manager.invoke_props_dialog(self)
 
 # Popup operator to display the success message
-class ProjectManagerPopupOperator(bpy.types.Operator):
-    bl_idname = "object.project_manager_popup"
+class DH_OT_ProjectManager_Popup(bpy.types.Operator):
+    bl_idname = "dh.project_manager_popup"
     bl_label = "Project Created"
 
     project_name: bpy.props.StringProperty()
@@ -83,30 +82,30 @@ class ProjectManagerPopupOperator(bpy.types.Operator):
         layout.label(text=f"Project '{self.project_name}' created in: {self.directory}")
 
 # Register the popup operator
-class CreateProjectDirectoriesOperator(bpy.types.Operator):
-    bl_idname = "object.create_project_directories"
+class DH_OT_CreateProjectDirectories(bpy.types.Operator):
+    bl_idname = "dh.create_project_directories"
     bl_label = "Create Project Directories"
 
     def execute(self, context):
-        bpy.ops.object.get_project_details('INVOKE_DEFAULT')
+        bpy.ops.dh.get_project_details('INVOKE_DEFAULT')
         return {'FINISHED'}
 
 # Registration and unregistration functions
 def register():
-    bpy.utils.register_class(GetProjectDetailsOperator)
-    bpy.utils.register_class(ProjectManagerPopupOperator)
-    bpy.utils.register_class(CreateProjectDirectoriesOperator)
+    bpy.utils.register_class(DH_OT_GetProjectDetails)
+    bpy.utils.register_class(DH_OT_ProjectManager_Popup)
+    bpy.utils.register_class(DH_OT_CreateProjectDirectories)
     bpy.types.VIEW3D_MT_object.append(menu_func)
 
 def unregister():
-    bpy.utils.unregister_class(GetProjectDetailsOperator)
-    bpy.utils.unregister_class(ProjectManagerPopupOperator)
-    bpy.utils.unregister_class(CreateProjectDirectoriesOperator)
+    bpy.utils.unregister_class(DH_OT_GetProjectDetails)
+    bpy.utils.unregister_class(DH_OT_ProjectManager_Popup)
+    bpy.utils.unregister_class(DH_OT_CreateProjectDirectories)
     bpy.types.VIEW3D_MT_object.remove(menu_func)
 
 # Add to the 3D Viewport menu
 def menu_func(self, context):
-    self.layout.operator(CreateProjectDirectoriesOperator.bl_idname)
+    self.layout.operator(DH_OT_CreateProjectDirectories.bl_idname)
 
 if __name__ == "__main__":
     register()

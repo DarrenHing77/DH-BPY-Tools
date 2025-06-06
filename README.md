@@ -11,7 +11,7 @@ for Blender power users who want a set of convenience tools.
   exporting, project setup and mesh utilities.
 - **DH_Custom_Sculpt_Pie.py** – simple pie menu that exposes common sculpt
   brushes.
-- **DH-Project-Manager/** – utility script to generate a folder layout for a new
+- **DH_Project_Manager/** – utility script to generate a folder layout for a new
   project.
 - **dh_texture_tools.py** – operators for adding and filling UDIM tiles from the
   Image Editor.
