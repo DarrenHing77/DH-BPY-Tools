@@ -34,6 +34,12 @@ class DH_OP_dcc_export(bpy.types.Operator):
         default=True, # Set to True by default
     ) # type: ignore
 
+    ignore_suffix: bpy.props.BoolProperty(
+        name="Ignore _low/_high Suffix",
+        description="Export without automatically appending the mesh option",
+        default=False,
+    ) # type: ignore
+
     def invoke(self, context, event):
         # If there is a single selected object, set the default export name
         if len(context.selected_objects) == 1:
@@ -47,7 +53,8 @@ class DH_OP_dcc_export(bpy.types.Operator):
         layout.prop(self, "export_name", text="File Name")
         layout.prop(self, "mesh_option", text="Mesh Option")
         layout.prop(self, "overwrite", text="Overwrite Latest")
-        layout.prop(self, "open_folder", text="Open Folder After") # Add the new checkbox
+        layout.prop(self, "open_folder", text="Open Folder After")
+        layout.prop(self, "ignore_suffix", text="Ignore Suffix")
 
     def execute(self, context):
         # --- 1. Get Base Path ---
@@ -62,7 +69,10 @@ class DH_OP_dcc_export(bpy.types.Operator):
         os.makedirs(fbx_directory, exist_ok=True)
 
         # --- 2. Determine File Name ---
-        object_name = f"{self.export_name}_{self.mesh_option.lower()}"
+        if self.ignore_suffix:
+            object_name = self.export_name
+        else:
+            object_name = f"{self.export_name}_{self.mesh_option.lower()}"
         fbx_filename = f"{object_name}.fbx"
 
         # --- 3. Determine Version Folder ---
@@ -85,12 +95,22 @@ class DH_OP_dcc_export(bpy.types.Operator):
              pass
 
         # Decide which version number to use
+        if version_num > 0:
+            latest_version_folder = os.path.join(
+                fbx_directory, f"v{str(version_num).zfill(3)}"
+            )
+
         if self.overwrite:
-            # Use the latest version (or v001 if none exist)
             version_to_use = max(1, version_num)
         else:
-            # Use the next version number
-            version_to_use = version_num + 1
+            if version_num == 0:
+                version_to_use = 1
+            else:
+                latest_file = os.path.join(latest_version_folder, fbx_filename)
+                if os.path.exists(latest_file):
+                    version_to_use = version_num + 1
+                else:
+                    version_to_use = version_num
 
         version_folder = os.path.join(fbx_directory, f"v{str(version_to_use).zfill(3)}")
         os.makedirs(version_folder, exist_ok=True) # Create the folder if it doesn't exist
