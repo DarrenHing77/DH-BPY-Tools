@@ -23,7 +23,7 @@ class DH_MT_Sculpt_Menu(bpy.types.Menu):
         row.operator('sculpt.face_sets_create', text='From Visible').mode = 'VISIBLE'
 
         row = face_box.row(align=True)
-        row.operator('sculpt.face_sets_create', text='From Edit Selection').mode = 'EDIT_MESH_SELECTION'
+        row.operator('sculpt.face_sets_create', text='From Edit Selection').mode = 'SELECTION'
         row.operator('sculpt.face_sets_init', text='Init Loose Parts').mode = 'LOOSE_PARTS'
 
         # Brushes
