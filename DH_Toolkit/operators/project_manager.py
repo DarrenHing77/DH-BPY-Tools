@@ -2,6 +2,9 @@ import bpy
 import os
 import tempfile
 
+# Store reference to the active project manager operator
+_active_pm_op = None
+
 
 class PM_FolderItem(bpy.types.PropertyGroup):
     path: bpy.props.StringProperty(name="Folder Path")
@@ -73,9 +76,13 @@ class DH_OP_Proj_Manage(bpy.types.Operator):
             project_name=self.project_name,
             directory=self.directory
         )
+        global _active_pm_op
+        _active_pm_op = None
         return {'FINISHED'}
 
     def invoke(self, context, event):
+        global _active_pm_op
+        _active_pm_op = self
         if not self.folder_items:
             self._add_default_folders()
         return context.window_manager.invoke_props_dialog(self)
@@ -102,13 +109,18 @@ class DH_OP_Proj_Manage(bpy.types.Operator):
             op = row.operator("dh.pm_remove_folder", text="", icon='REMOVE')
             op.index = i
 
+    def cancel(self, context):
+        global _active_pm_op
+        _active_pm_op = None
+
 # Operators to modify the folder list while the popup is open
 class DH_PM_AddFolder(bpy.types.Operator):
     bl_idname = "dh.pm_add_folder"
     bl_label = "Add Folder"
 
     def execute(self, context):
-        op = context.active_operator
+        global _active_pm_op
+        op = _active_pm_op
         if op:
             item = op.folder_items.add()
             item.path = f"New_Folder_{len(op.folder_items)}"
@@ -122,7 +134,8 @@ class DH_PM_AddSubfolder(bpy.types.Operator):
     index: bpy.props.IntProperty()
 
     def execute(self, context):
-        op = context.active_operator
+        global _active_pm_op
+        op = _active_pm_op
         if op and 0 <= self.index < len(op.folder_items):
             parent = op.folder_items[self.index].path
             item = op.folder_items.add()
@@ -137,7 +150,8 @@ class DH_PM_RemoveFolder(bpy.types.Operator):
     index: bpy.props.IntProperty()
 
     def execute(self, context):
-        op = context.active_operator
+        global _active_pm_op
+        op = _active_pm_op
         if op and 0 <= self.index < len(op.folder_items):
             op.folder_items.remove(self.index)
         return {'FINISHED'}
