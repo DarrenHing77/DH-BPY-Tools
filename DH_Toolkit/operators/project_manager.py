@@ -133,6 +133,16 @@ class DH_PM_AddFolder(bpy.types.Operator):
         if op:
             item = op.folder_items.add()
             item.path = f"New_Folder_{len(op.folder_items)}"
+            # ensure new folders are root level by moving after the last
+            # existing top level item
+            insert_index = len(op.folder_items) - 1
+            last_root = -1
+            for i, it in enumerate(op.folder_items[:-1]):
+                if os.sep not in it.path:
+                    last_root = i
+            if last_root != -1:
+                insert_index = last_root + 1
+            op.folder_items.move(len(op.folder_items) - 1, insert_index)
         return {'FINISHED'}
 
 
@@ -147,8 +157,18 @@ class DH_PM_AddSubfolder(bpy.types.Operator):
         op = _active_pm_op
         if op and 0 <= self.index < len(op.folder_items):
             parent = op.folder_items[self.index].path
+            parent_indent = parent.count(os.sep)
             item = op.folder_items.add()
             item.path = os.path.join(parent, f"New_Folder_{len(op.folder_items)}")
+
+            # insert the new item directly after the parent's existing subtree
+            insert_index = self.index + 1
+            for i in range(self.index + 1, len(op.folder_items) - 1):
+                indent = op.folder_items[i].path.count(os.sep)
+                if indent <= parent_indent:
+                    break
+                insert_index = i + 1
+            op.folder_items.move(len(op.folder_items) - 1, insert_index)
         return {'FINISHED'}
 
 
@@ -162,6 +182,12 @@ class DH_PM_RemoveFolder(bpy.types.Operator):
         global _active_pm_op
         op = _active_pm_op
         if op and 0 <= self.index < len(op.folder_items):
+            target = op.folder_items[self.index].path
+            prefix = target + os.sep
+            # remove children first
+            idx = self.index + 1
+            while idx < len(op.folder_items) and op.folder_items[idx].path.startswith(prefix):
+                op.folder_items.remove(idx)
             op.folder_items.remove(self.index)
         return {'FINISHED'}
 
