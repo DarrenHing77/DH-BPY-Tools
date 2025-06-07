@@ -11,6 +11,85 @@ class DH_MT_Sculpt_Menu(bpy.types.Menu):
         icons = load_icons()
         pie = self.layout.menu_pie()
 
+        # LEFT - Brush Tools
+        col_left = pie.column()
+
+        brush_box = col_left.box()
+        brush_box.label(text='Brushes')
+
+        grid = brush_box.grid_flow(row_major=True, columns=3, even_columns=True)
+
+        brushes = [
+            ("Draw", "brushes\\essentials_brushes-mesh_sculpt.blend\\Brush\\Draw"),
+            ("Draw Sharp", "brushes\\essentials_brushes-mesh_sculpt.blend\\Brush\\Draw Sharp"),
+            ("Clay", "brushes\\essentials_brushes-mesh_sculpt.blend\\Brush\\Clay"),
+            ("Clay Strips", "brushes\\essentials_brushes-mesh_sculpt.blend\\Brush\\Clay Strips"),
+            ("Grab", "brushes\\essentials_brushes-mesh_sculpt.blend\\Brush\\Grab"),
+            ("Smooth", "brushes\\essentials_brushes-mesh_sculpt.blend\\Brush\\Smooth"),
+            ("Scrape", "brushes\\essentials_brushes-mesh_sculpt.blend\\Brush\\Scrape/Fill"),
+            ("Pinch", "brushes\\essentials_brushes-mesh_sculpt.blend\\Brush\\Pinch"),
+            ("Crease", "brushes\\essentials_brushes-mesh_sculpt.blend\\Brush\\Crease"),
+            ("Mask", "brushes\\essentials_brushes-mesh_sculpt.blend\\Brush\\Mask"),
+        ]
+
+        for name, identifier in brushes:
+            op = grid.operator("brush.asset_activate", text=name)
+            op.asset_library_type = 'ESSENTIALS'
+            op.asset_library_identifier = ""
+            op.relative_asset_identifier = identifier
+
+        # RIGHT - Brush Panel and Symmetry
+        col_right = pie.column()
+
+        draw_sculpt_panels(col_right, context)
+
+        sym_box = col_right.box()
+        sym_box.label(text='Symmetry')
+        sculpt = context.tool_settings.sculpt
+
+        row = sym_box.row(align=True)
+        row.prop(context.object, "use_mesh_mirror_x", text="X", toggle=True)
+        row.prop(context.object, "use_mesh_mirror_y", text="Y", toggle=True)
+        row.prop(context.object, "use_mesh_mirror_z", text="Z", toggle=True)
+
+        row = sym_box.row(align=True)
+        row.operator("sculpt.symmetrize", text="+X to -X")
+        row.operator("sculpt.symmetrize", text="-X to +X")
+
+        # BOTTOM - Masking Tools
+        col_bottom = pie.column()
+        box = col_bottom.box()
+        box.label(text='Mask Tools')
+
+        row = box.row(align=True)
+        row.operator('dh.mask_extract', text="Extract Mask")
+        row.operator('mesh.paint_mask_slice', text="Mask Slice")
+
+        box.label(text="Mask Brushes:")
+        row = box.row(align=True)
+        row.operator("wm.tool_set_by_id", text="Box").name = "builtin.box_mask"
+        row.operator("wm.tool_set_by_id", text="Lasso").name = "builtin.lasso_mask"
+        row.operator("wm.tool_set_by_id", text="Line").name = "builtin.line_mask"
+
+        box.separator()
+        box.label(text="Mask Operations:")
+        row = box.row(align=True)
+
+        op = row.operator("paint.mask_flood_fill", text="Fill")
+        op.mode = 'VALUE'
+        op.value = 1.0
+
+        op = row.operator("paint.mask_flood_fill", text="Clear")
+        op.mode = 'VALUE'
+        op.value = 0.0
+
+        op = row.operator("paint.mask_flood_fill", text="Invert")
+        op.mode = 'INVERT'
+        box.separator()
+        box.label(text='Preferences')
+        row = box.row(align=True)
+        row.operator("screen.userpref_show", text="Open Preferences")
+
         # TOP - Multires, Dyntopo, and Modifiers
         col_top = pie.column()
 
@@ -61,81 +140,3 @@ class DH_MT_Sculpt_Menu(bpy.types.Menu):
         mod_box.operator('object.delete_all_modifiers', text="Delete Modifiers", icon_value=icon.icon_id)
         mod_box.operator('dh_op.copy_modifiers', text="Copy Modifiers")
 
-        # RIGHT - Brush Settings and Symmetry
-        col_right = pie.column()
-
-        # Brush Settings
-        brush_box = col_right.box()
-        brush_box.label(text='Brushes')
-
-        grid = brush_box.grid_flow(row_major=True, columns=3, even_columns=True)
-
-        brushes = [
-            ("Draw", "brushes\\essentials_brushes-mesh_sculpt.blend\\Brush\\Draw"),
-            ("Draw Sharp", "brushes\\essentials_brushes-mesh_sculpt.blend\\Brush\\Draw Sharp"),
-            ("Clay", "brushes\\essentials_brushes-mesh_sculpt.blend\\Brush\\Clay"),
-            ("Clay Strips", "brushes\\essentials_brushes-mesh_sculpt.blend\\Brush\\Clay Strips"),
-            ("Grab", "brushes\\essentials_brushes-mesh_sculpt.blend\\Brush\\Grab"),
-            ("Smooth", "brushes\\essentials_brushes-mesh_sculpt.blend\\Brush\\Smooth"),
-            ("Scrape", "brushes\\essentials_brushes-mesh_sculpt.blend\\Brush\\Scrape/Fill"),
-            ("Pinch", "brushes\\essentials_brushes-mesh_sculpt.blend\\Brush\\Pinch"),
-            ("Crease", "brushes\\essentials_brushes-mesh_sculpt.blend\\Brush\\Crease"),
-            ("Mask", "brushes\\essentials_brushes-mesh_sculpt.blend\\Brush\\Mask"),
-        ]
-
-        for name, identifier in brushes:
-            op = grid.operator("brush.asset_activate", text=name)
-            op.asset_library_type = 'ESSENTIALS'
-            op.asset_library_identifier = ""
-            op.relative_asset_identifier = identifier
-
-        # Symmetry Options
-        sym_box = col_right.box()
-        sym_box.label(text='Symmetry')
-        sculpt = context.tool_settings.sculpt
-
-        row = sym_box.row(align=True)
-        row.prop(context.object, "use_mesh_mirror_x", text="X", toggle=True)
-        row.prop(context.object,"use_mesh_mirror_y", text="Y", toggle=True)
-        row.prop(context.object,"use_mesh_mirror_z", text="Z", toggle=True)
-
-        row = sym_box.row(align=True)
-        row.operator("sculpt.symmetrize", text="+X to -X")
-        row.operator("sculpt.symmetrize", text="-X to +X")
-
-        # BOTTOM - Masking Tools
-        col_bottom = pie.column()
-        box = col_bottom.box()
-        box.label(text='Mask Tools')
-
-        row = box.row(align=True)
-        row.operator('dh.mask_extract', text="Extract Mask")
-        row.operator('mesh.paint_mask_slice', text="Mask Slice")
-
-        box.label(text="Mask Brushes:")
-        row = box.row(align=True)
-        row.operator("wm.tool_set_by_id", text="Box").name = "builtin.box_mask"
-        row.operator("wm.tool_set_by_id", text="Lasso").name = "builtin.lasso_mask"
-        row.operator("wm.tool_set_by_id", text="Line").name = "builtin.line_mask"
-
-        box.separator()
-        box.label(text="Mask Operations:")
-        row = box.row(align=True)
-
-        op = row.operator("paint.mask_flood_fill", text="Fill")
-        op.mode = 'VALUE'
-        op.value = 1.0
-
-        op = row.operator("paint.mask_flood_fill", text="Clear")
-        op.mode = 'VALUE'
-        op.value = 0.0
-
-        op = row.operator("paint.mask_flood_fill", text="Invert")
-        op.mode = 'INVERT'
-        box.separator()
-        box.label(text='Preferences')
-        row = box.row(align=True)
-        row.operator("screen.userpref_show", text="Open Preferences")
-
-        # LEFT - Brushes (Already added above)
-        pie.column()  # Left Column for brushes (already defined above)
