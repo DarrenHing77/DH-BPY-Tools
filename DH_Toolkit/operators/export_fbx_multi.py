@@ -70,10 +70,27 @@ class DH_OP_dcc_split_export(bpy.types.Operator):
             pass # Folder exists or is created
 
         # Decide which version number to use
+        if version_num > 0:
+            latest_version_folder = os.path.join(
+                split_fbx_directory, f"v{str(version_num).zfill(3)}"
+            )
+
         if self.overwrite:
             version_to_use = max(1, version_num)
         else:
-            version_to_use = version_num + 1
+            if version_num == 0:
+                version_to_use = 1
+            else:
+                file_exists = False
+                for obj in selected_objects:
+                    check_path = os.path.join(latest_version_folder, f"{obj.name}.fbx")
+                    if os.path.exists(check_path):
+                        file_exists = True
+                        break
+                if file_exists:
+                    version_to_use = version_num + 1
+                else:
+                    version_to_use = version_num
 
         version_folder = os.path.join(split_fbx_directory, f"v{str(version_to_use).zfill(3)}")
         os.makedirs(version_folder, exist_ok=True)
