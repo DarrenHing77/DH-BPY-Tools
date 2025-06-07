@@ -14,6 +14,19 @@ class DH_MT_Sculpt_Menu(bpy.types.Menu):
         # LEFT - Brush Tools
         col_left = pie.column()
 
+        # Face Sets Tools
+        face_box = col_left.box()
+        face_box.label(text='Face Sets')
+
+        row = face_box.row(align=True)
+        row.operator('sculpt.face_sets_create', text='From Masked').mode = 'MASKED'
+        row.operator('sculpt.face_sets_create', text='From Visible').mode = 'VISIBLE'
+
+        row = face_box.row(align=True)
+        row.operator('sculpt.face_sets_create', text='From Edit Selection').mode = 'EDIT_MESH_SELECTION'
+        row.operator('sculpt.face_sets_init', text='Init Loose Parts').mode = 'LOOSE_PARTS'
+
+        # Brushes
         brush_box = col_left.box()
         brush_box.label(text='Brushes')
 
