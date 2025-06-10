@@ -90,6 +90,7 @@ class DH_MT_Weight_Paint_Menu(bpy.types.Menu):
         column = box.column()
         column.operator("paint.weight_set", text="Set Weight")
         column.operator("object.vertex_group_smooth", text="Smooth Weight")
+        column.operator("dh.cycle_vertex_groups", text="Cycle Vertex Groups")
         
     
     def draw_vertex_groups(self, layout, context):

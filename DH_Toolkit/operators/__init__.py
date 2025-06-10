@@ -22,6 +22,7 @@ from .modifier_tools import DH_OP_CopyModifiers, DH_OP_toggle_modifiers_visibili
 from .transform_utils import DH_OP_ResetTransforms
 from .display_utils import DH_OP_ToggleWireframe, DH_OT_ToggleVisibilityOutliner, DH_OP_toggle_lock_camera, DH_OP_SwitchToShaderEditor
 from .utils import DH_OT_smart_hide
+from .cycle_vertex_groups import DH_OP_CycleVertexGroups
 
 
 
@@ -51,6 +52,7 @@ classes = (
     DH_OP_SwitchToShaderEditor,
     DH_OT_smart_hide,
     DH_OP_toggle_modifiers_visibility,
+    DH_OP_CycleVertexGroups,
     
     
     
