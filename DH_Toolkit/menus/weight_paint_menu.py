@@ -2,7 +2,8 @@ import bpy
 from ..icons.icons import load_icons
 
 class DH_MT_Weight_Paint_Menu(bpy.types.Menu):
-    bl_idname = "wm.dh_open_weight_popup"
+    # Use the same idname as referenced in the keymap registration
+    bl_idname = "DH_MT_Weight_Paint_Menu"
     bl_label = "DH Weight Paint Toolkit"
 
     def draw(self, context):
@@ -18,9 +19,7 @@ class DH_MT_Weight_Paint_Menu(bpy.types.Menu):
 
         box = layout.box()
         self.draw_weight_tools(box, context)
-
-        box = layout.box()
-        self.draw_display_options(box, context)
+        # Display options are not implemented; remove call to avoid errors
 
     # Optional: add the others back if needed
     # box = layout.box()
