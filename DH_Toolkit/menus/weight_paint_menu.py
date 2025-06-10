@@ -24,6 +24,7 @@ class DH_MT_Weight_Paint_Menu(bpy.types.Menu):
         box_bottom = col_bottom.box()
         self.draw_weight_tools(box_bottom, context)
 
+
         # TOP - Vertex Groups
         col_top = pie.column()
         box_top = col_top.box()
@@ -44,6 +45,9 @@ class DH_MT_Weight_Paint_Menu(bpy.types.Menu):
 
         # TOP-RIGHT - intentionally left empty
         pie.column()
+        box = layout.box()
+        self.draw_weight_tools(box, context)
+        # Display options are not implemented; remove call to avoid errors
 
     # Optional: add the others back if needed
     # box = layout.box()
