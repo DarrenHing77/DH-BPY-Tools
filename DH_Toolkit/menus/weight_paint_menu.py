@@ -7,16 +7,44 @@ class DH_MT_Weight_Paint_Menu(bpy.types.Menu):
     bl_label = "DH Weight Paint Toolkit"
 
     def draw(self, context):
-        layout = self.layout
+        pie = self.layout.menu_pie()
 
-        layout.label(text="Weight Paint Toolkit")
+        # LEFT - Weight Brushes
+        col_left = pie.column()
+        box_left = col_left.box()
+        self.draw_weight_brushes(box_left, context)
 
-        box = layout.box()
-        self.draw_weight_brushes(box, context)
+        # RIGHT - Brush Settings
+        col_right = pie.column()
+        box_right = col_right.box()
+        self.draw_brush_settings(box_right, context)
 
-        box = layout.box()
-        self.draw_brush_settings(box, context)
+        # BOTTOM - Weight Tools
+        col_bottom = pie.column()
+        box_bottom = col_bottom.box()
+        self.draw_weight_tools(box_bottom, context)
 
+
+        # TOP - Vertex Groups
+        col_top = pie.column()
+        box_top = col_top.box()
+        self.draw_vertex_groups(box_top, context)
+
+        # BOTTOM-LEFT - Weight Gradients
+        col_bottom_left = pie.column()
+        box_bottom_left = col_bottom_left.box()
+        self.draw_weight_gradients(box_bottom_left, context)
+
+        # BOTTOM-RIGHT - Weight Transfer
+        col_bottom_right = pie.column()
+        box_bottom_right = col_bottom_right.box()
+        self.draw_weight_transfer(box_bottom_right, context)
+
+        # TOP-LEFT - intentionally left empty
+        pie.column()
+
+        # TOP-RIGHT - intentionally left empty
+        pie.column()
         box = layout.box()
         self.draw_weight_tools(box, context)
         # Display options are not implemented; remove call to avoid errors

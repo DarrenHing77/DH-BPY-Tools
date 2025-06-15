@@ -55,6 +55,8 @@ class DH_MT_Main_Menu(bpy.types.Menu):
         col_center.operator("dh.open_proj_dir", text="Open Project", icon='FILE_FOLDER')
         col_center.operator("dh.create_project_directories", text="Project Manager", icon='FILE_FOLDER')
         col_center.operator("screen.userpref_show", text="Open Preferences")
+        col_center.separator()
+        col_center.operator("dh.build_shader", text="Build Shader")
         
         
 
