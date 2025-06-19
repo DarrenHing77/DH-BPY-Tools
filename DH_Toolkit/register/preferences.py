@@ -1,26 +1,69 @@
 import bpy
 
+class DH_OP_SetShortcutKey(bpy.types.Operator):
+    bl_idname = "dh.set_shortcut_key"
+    bl_label = "Click to press any key"
+    bl_description = "Click then press any key to set it as the shortcut key"
+    bl_options = {'REGISTER', 'INTERNAL'}
+
+    # Static variable to store the button text
+    button_text = "Click to set key"
+
+    @classmethod
+    def set_button_text(cls, text):
+        cls.button_text = text
+        # Force UI redraw
+        for area in bpy.context.screen.areas:
+            if area.type == 'PREFERENCES':
+                area.tag_redraw()
+
+    def invoke(self, context, event):
+        # Start the modal operation
+        DH_OP_SetShortcutKey.set_button_text("Press any key...")
+        context.window_manager.modal_handler_add(self)
+        return {'RUNNING_MODAL'}
+
+    def modal(self, context, event):
+        # List of events to ignore
+        ignored_keys = {
+            'MOUSEMOVE', 'INBETWEEN_MOUSEMOVE', 
+            'LEFTMOUSE', 'RIGHTMOUSE', 'MIDDLEMOUSE',
+            'LEFT_CTRL', 'RIGHT_CTRL', 
+            'LEFT_ALT', 'RIGHT_ALT', 
+            'LEFT_SHIFT', 'RIGHT_SHIFT'
+        }
+
+        # When a key is pressed
+        if event.value == 'PRESS' and event.type not in ignored_keys:
+            # Get addon preferences
+            prefs = context.preferences.addons["DH_Toolkit"].preferences
+            # Set the new key
+            prefs.key_type = event.type
+            # Update button text
+            DH_OP_SetShortcutKey.set_button_text(f"Key: {event.type}")
+            
+            # Update keymap if necessary
+            from .keymap import unregister_keymap, register_keymap
+            unregister_keymap()
+            register_keymap()
+            
+            return {'FINISHED'}
+        
+        # Cancel operation
+        elif event.type == 'ESC':
+            DH_OP_SetShortcutKey.set_button_text("Click to set key")
+            return {'CANCELLED'}
+        
+        return {'RUNNING_MODAL'}
+
+
 class DH_ToolkitPreferences(bpy.types.AddonPreferences):
     bl_idname = "DH_Toolkit"  # This must match your addon's package name
 
     # Key binding preferences
-    key_type: bpy.props.EnumProperty(
+    key_type: bpy.props.StringProperty(
         name="Key",
         description="Key for the pie menu",
-        items=[
-            ('X', "X", "Use X key"),
-            ('Z', "Z", "Use Z key"),
-            ('A', "A", "Use A key"),
-            ('S', "S", "Use S key"),
-            ('D', "D", "Use D key"),
-            ('F', "F", "Use F key"),
-            ('W', "W", "Use W key"),
-            ('E', "E", "Use E key"),
-            ('R', "R", "Use R key"),
-            ('TAB', "Tab", "Use Tab key"),
-            ('SPACE', "Space", "Use Space key"),
-            ('Q', "Q", "Use Q key")
-        ],
         default='X'
     )
     
@@ -53,16 +96,25 @@ class DH_ToolkitPreferences(bpy.types.AddonPreferences):
         row.prop(self, "use_alt")
         row.prop(self, "use_ctrl")
         
-        # Key selection
-        box.prop(self, "key_type")
+        # Key selection button
+        row = box.row()
+        row.label(text="Shortcut Key:")
+        row.operator("dh.set_shortcut_key", text=DH_OP_SetShortcutKey.button_text)
         
-        # Add a note about restarting Blender
+        # Current key info
+        if self.key_type:
+            box.label(text=f"Current key: {self.key_type}")
+        
+        # Add a note about keymap changes
         box.separator()
-        box.label(text="Note: Restart Blender after changing keymap settings", icon='INFO')
+        box.label(text="Note: Keymap changes apply immediately", icon='INFO')
 
-# Register preferences
-def register_pref():
+
+# Register preferences and the operator
+def register_preferences():
+    bpy.utils.register_class(DH_OP_SetShortcutKey)
     bpy.utils.register_class(DH_ToolkitPreferences)
 
-def unregister_pref():
+def unregister_preferences():
     bpy.utils.unregister_class(DH_ToolkitPreferences)
+    bpy.utils.unregister_class(DH_OP_SetShortcutKey)

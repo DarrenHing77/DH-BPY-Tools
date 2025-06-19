@@ -41,6 +41,7 @@ class GetProjectDetailsOperator(bpy.types.Operator):
 
     project_name: bpy.props.StringProperty(name="Project Name", default="MyProject")
     directory: bpy.props.StringProperty(name="Directory", subtype='DIR_PATH')
+    save_scene: bpy.props.BoolProperty(name="Save Current Scene", default=False)
 
     def execute(self, context):
         if not self.project_name or not self.directory:
@@ -49,7 +50,13 @@ class GetProjectDetailsOperator(bpy.types.Operator):
 
         create_project_directories(context, self.project_name, self.directory)
 
-        # Call the draw method to create the popup dialog with a timeout
+        if self.save_scene:
+            project_path = os.path.join(self.directory, self.project_name)
+            scene_dir = os.path.join(project_path, "03_Blender", "Scenes")
+            os.makedirs(scene_dir, exist_ok=True)
+            filepath = os.path.join(scene_dir, f"{self.project_name}_v001.blend")
+            bpy.ops.wm.save_as_mainfile(filepath=filepath)
+
         bpy.ops.object.project_manager_popup(
             'INVOKE_DEFAULT',
             project_name=self.project_name,

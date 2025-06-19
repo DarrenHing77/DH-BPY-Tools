@@ -4,6 +4,7 @@ from .mesh_menu import draw_mesh, draw_mask
 from .display_menu import draw_display
 from .project_menu import draw_project
 from ..icons.icons import load_icons
+from ..icons import *
 from .brush_panel import draw_sculpt_panels
 from .modifers_multires_menu import draw_modifiers_multires_menu
 from ..operators.open_proj_dir import DH_OP_Open_Proj_Dir
@@ -53,7 +54,9 @@ class DH_MT_Main_Menu(bpy.types.Menu):
         # Add "Project Manager" to the bottom center
         col_center.operator("dh.open_proj_dir", text="Open Project", icon='FILE_FOLDER')
         col_center.operator("dh.create_project_directories", text="Project Manager", icon='FILE_FOLDER')
-        col_center.operator("dh.open_preferences", text="Preferences")
+        col_center.operator("screen.userpref_show", text="Open Preferences")
+        col_center.separator()
+        col_center.operator("dh.build_shader", text="Build Shader")
         
         
 

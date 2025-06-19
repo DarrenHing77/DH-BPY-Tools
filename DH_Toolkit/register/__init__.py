@@ -1,35 +1,37 @@
 import bpy
 
 def register_addon():
-    # Register preferences first so they're available for keymap setup
-    from .preferences import register_pref
-    register_pref()
-    
-    # Register other components: properties, operators, menus, and keymaps
+    # Register components in sequence
+    from .preferences import register_preferences
     from ..property import register_properties
     from ..operators import register_operators
     from ..menus import register_menus
-    from .keymap import register_keymap, unregister_keymap
+    from .keymap import register_keymap
     
+    # Register preferences first to make them available to other components
+    register_preferences()
+    
+    # Then register other components
     register_properties()
     register_operators()
     register_menus()
-    
-    # Register keymap last (after preferences are available)
     register_keymap()
 
 def unregister_addon():
-    # Unregister keymap first
+    # Unregister in reverse order
     from .keymap import unregister_keymap
+    from ..menus import unregister_menus
+    from ..operators import unregister_operators
+    from ..property import unregister_properties
+    from .preferences import unregister_preferences
+    
+    # Unregister keymap first
     unregister_keymap()
     
-    # Unregister other components
-    from ..operators import unregister_operators
-    from ..menus import unregister_menus
-    
-    unregister_operators()
+    # Then unregister other components
     unregister_menus()
+    unregister_operators()
+    unregister_properties()
     
     # Unregister preferences last
-    from .preferences import unregister_pref
-    unregister_pref()
+    unregister_preferences()

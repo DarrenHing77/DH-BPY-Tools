@@ -12,6 +12,7 @@ def draw_modifiers_multires_menu(layout, context):
     icon = icons.get("icon_delete")
     layout.operator('object.delete_all_modifiers', text="Delete Modifiers", icon_value=icon.icon_id)
     layout.operator('dh_op.copy_modifiers', text="Copy Modifiers")
+    layout.operator('dh_op.toggle_modifiers_visibility', text="Modifiers Vis")
     layout.separator()
     layout.label(text="Multires")
     layout.operator('dh.set_multires_viewport_max', text="Set Multires Max")
