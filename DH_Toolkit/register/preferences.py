@@ -85,8 +85,52 @@ class DH_ToolkitPreferences(bpy.types.AddonPreferences):
         default=False
     )
 
+    # Shader Builder custom naming patterns
+    custom_basecolor: bpy.props.StringProperty(
+        name="Base Color Pattern",
+        description="Custom regex pattern for base color textures (e.g., 'col|color_map')",
+        default=""
+    )
+    custom_normal: bpy.props.StringProperty(
+        name="Normal Pattern", 
+        description="Custom regex pattern for normal textures",
+        default=""
+    )
+    custom_roughness: bpy.props.StringProperty(
+        name="Roughness Pattern",
+        description="Custom regex pattern for roughness textures", 
+        default=""
+    )
+    custom_metallic: bpy.props.StringProperty(
+        name="Metallic Pattern",
+        description="Custom regex pattern for metallic textures",
+        default=""
+    )
+    custom_orm: bpy.props.StringProperty(
+        name="ORM Pattern",
+        description="Custom regex pattern for ORM packed textures",
+        default=""
+    )
+    custom_height: bpy.props.StringProperty(
+        name="Height Pattern",
+        description="Custom regex pattern for height/displacement textures",
+        default=""
+    )
+    custom_ao: bpy.props.StringProperty(
+        name="AO Pattern", 
+        description="Custom regex pattern for ambient occlusion textures",
+        default=""
+    )
+    custom_emission: bpy.props.StringProperty(
+        name="Emission Pattern",
+        description="Custom regex pattern for emission textures", 
+        default=""
+    )
+
     def draw(self, context):
         layout = self.layout
+        
+        # Keymap settings section
         box = layout.box()
         box.label(text="DH Toolkit Keymap Settings", icon='KEYINGSET')
         
@@ -108,6 +152,30 @@ class DH_ToolkitPreferences(bpy.types.AddonPreferences):
         # Add a note about keymap changes
         box.separator()
         box.label(text="Note: Keymap changes apply immediately", icon='INFO')
+
+        # Shader Builder settings section
+        layout.separator()
+        shader_box = layout.box()
+        shader_box.label(text="Shader Builder Custom Patterns", icon='TEXTURE')
+        shader_box.label(text="Use regex patterns to match your studio's texture naming conventions.")
+        
+        pattern_box = shader_box.box()
+        col = pattern_box.column()
+        
+        col.prop(self, "custom_basecolor")
+        col.prop(self, "custom_normal") 
+        col.prop(self, "custom_roughness")
+        col.prop(self, "custom_metallic")
+        col.prop(self, "custom_orm")
+        col.prop(self, "custom_height")
+        col.prop(self, "custom_ao")
+        col.prop(self, "custom_emission")
+        
+        shader_box.separator()
+        shader_box.label(text="Examples:")
+        shader_box.label(text="• 'mymat_d|my_diffuse' - matches either naming style")
+        shader_box.label(text="• 'studio_.*_col' - matches studio_anything_col")
+        shader_box.label(text="• '\\w+_basecolor_\\d+k' - matches word_basecolor_4k patterns")
 
 
 # Register preferences and the operator
