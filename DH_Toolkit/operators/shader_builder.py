@@ -24,11 +24,11 @@ class DH_OP_BuildShader(bpy.types.Operator):
 
     def get_addon_prefs(self):
         """Get addon preferences for custom patterns"""
-        addon_prefs = bpy.context.preferences.addons[__package__].preferences
+        addon_prefs = bpy.context.preferences.addons["DH_Toolkit"].preferences
         return addon_prefs
 
     def get_texture_patterns(self):
-        """Smart texture detection patterns - gets base patterns + custom user patterns from prefs"""
+        """Smart texture detection patterns - gets base patterns + user patterns from prefs"""
         base_patterns = {
             "basecolor": [
                 r"(?:basecolor|albedo|diffuse|diff|col|color|bc)(?:_\d+k?)?",
@@ -64,28 +64,59 @@ class DH_OP_BuildShader(bpy.types.Operator):
             ]
         }
         
-        # Get custom patterns from addon preferences
+        # Get user patterns from addon preferences
         try:
             prefs = self.get_addon_prefs()
-            custom_mappings = {
-                "basecolor": prefs.custom_basecolor,
-                "normal": prefs.custom_normal,
-                "roughness": prefs.custom_roughness, 
-                "metallic": prefs.custom_metallic,
-                "orm": prefs.custom_orm,
-                "height": prefs.custom_height,
-                "ao": prefs.custom_ao,
-                "emission": prefs.custom_emission
-            }
             
-            for tex_type, custom_pattern in custom_mappings.items():
-                if custom_pattern.strip():
-                    # Add custom pattern to the list
-                    base_patterns[tex_type].append(custom_pattern.strip())
-                    print(f"Added custom pattern for {tex_type}: {custom_pattern.strip()}")
-        except:
+            if prefs.use_advanced_patterns:
+                # Use advanced regex patterns if enabled
+                advanced_mappings = {
+                    "basecolor": prefs.regex_basecolor,
+                    "normal": prefs.regex_normal,
+                    "roughness": prefs.regex_roughness, 
+                    "metallic": prefs.regex_metallic,
+                    "orm": prefs.regex_orm,
+                    "height": prefs.regex_height,
+                    "ao": prefs.regex_ao,
+                    "emission": prefs.regex_emission
+                }
+                
+                for tex_type, regex_pattern in advanced_mappings.items():
+                    if regex_pattern.strip():
+                        base_patterns[tex_type].append(regex_pattern.strip())
+                        print(f"Added advanced pattern for {tex_type}: {regex_pattern.strip()}")
+            else:
+                # Build simple patterns from user inputs
+                sep = prefs.naming_separator if prefs.naming_separator else ""
+                escape_sep = re.escape(sep) if sep else ""
+                
+                suffix_mappings = {
+                    "basecolor": prefs.suffix_basecolor,
+                    "normal": prefs.suffix_normal,
+                    "roughness": prefs.suffix_roughness, 
+                    "metallic": prefs.suffix_metallic,
+                    "orm": prefs.suffix_orm,
+                    "height": prefs.suffix_height,
+                    "ao": prefs.suffix_ao,
+                    "emission": prefs.suffix_emission
+                }
+                
+                for tex_type, suffix in suffix_mappings.items():
+                    if suffix.strip():
+                        # Create patterns for the user's naming convention
+                        if sep:
+                            # With separator: "material_d" or "material_d_4k"
+                            pattern = f".*{escape_sep}{re.escape(suffix.strip())}(?:{escape_sep}\\d+k?)?$"
+                        else:
+                            # No separator: "materiald" 
+                            pattern = f".*{re.escape(suffix.strip())}(?:\\d+k?)?$"
+                        
+                        base_patterns[tex_type].append(pattern)
+                        print(f"Added simple pattern for {tex_type}: {pattern}")
+                        
+        except Exception as e:
             # Fallback if preferences aren't available yet
-            print("Using default patterns only")
+            print(f"Using default patterns only: {e}")
         
         return base_patterns
 

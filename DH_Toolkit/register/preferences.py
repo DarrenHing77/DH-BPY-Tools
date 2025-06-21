@@ -85,44 +85,106 @@ class DH_ToolkitPreferences(bpy.types.AddonPreferences):
         default=False
     )
 
-    # Shader Builder custom naming patterns
-    custom_basecolor: bpy.props.StringProperty(
-        name="Base Color Pattern",
-        description="Custom regex pattern for base color textures (e.g., 'col|color_map')",
+    # Shader Builder custom naming patterns - simplified inputs
+    naming_separator: bpy.props.EnumProperty(
+        name="Separator",
+        description="Character used to separate parts of texture names",
+        items=[
+            ('_', "Underscore (_)", "wood_basecolor_4k"),
+            ('-', "Dash (-)", "wood-basecolor-4k"),
+            ('.', "Dot (.)", "wood.basecolor.4k"),
+            ('', "None", "woodbasecolor4k"),
+        ],
+        default='_'
+    )
+    
+    # Custom suffix patterns (user-friendly)
+    suffix_basecolor: bpy.props.StringProperty(
+        name="Base Color Suffix",
+        description="What comes after your material name for base color (e.g., 'd', 'diff', 'albedo')",
+        default="d"
+    )
+    suffix_normal: bpy.props.StringProperty(
+        name="Normal Suffix",
+        description="What comes after your material name for normals",
+        default="n"
+    )
+    suffix_roughness: bpy.props.StringProperty(
+        name="Roughness Suffix", 
+        description="What comes after your material name for roughness",
+        default="r"
+    )
+    suffix_metallic: bpy.props.StringProperty(
+        name="Metallic Suffix",
+        description="What comes after your material name for metallic",
+        default="m"
+    )
+    suffix_orm: bpy.props.StringProperty(
+        name="ORM Suffix",
+        description="What comes after your material name for ORM packed textures",
+        default="orm"
+    )
+    suffix_height: bpy.props.StringProperty(
+        name="Height Suffix",
+        description="What comes after your material name for height/displacement",
+        default="h"
+    )
+    suffix_ao: bpy.props.StringProperty(
+        name="AO Suffix",
+        description="What comes after your material name for ambient occlusion", 
+        default="ao"
+    )
+    suffix_emission: bpy.props.StringProperty(
+        name="Emission Suffix",
+        description="What comes after your material name for emission",
+        default="e"
+    )
+    
+    # Advanced regex toggle
+    use_advanced_patterns: bpy.props.BoolProperty(
+        name="Use Advanced Regex Patterns",
+        description="Enable direct regex input for advanced users",
+        default=False
+    )
+    
+    # Advanced regex patterns (for power users)
+    regex_basecolor: bpy.props.StringProperty(
+        name="Base Color Regex",
+        description="Custom regex pattern for base color textures",
         default=""
     )
-    custom_normal: bpy.props.StringProperty(
-        name="Normal Pattern", 
+    regex_normal: bpy.props.StringProperty(
+        name="Normal Regex", 
         description="Custom regex pattern for normal textures",
         default=""
     )
-    custom_roughness: bpy.props.StringProperty(
-        name="Roughness Pattern",
+    regex_roughness: bpy.props.StringProperty(
+        name="Roughness Regex",
         description="Custom regex pattern for roughness textures", 
         default=""
     )
-    custom_metallic: bpy.props.StringProperty(
-        name="Metallic Pattern",
+    regex_metallic: bpy.props.StringProperty(
+        name="Metallic Regex",
         description="Custom regex pattern for metallic textures",
         default=""
     )
-    custom_orm: bpy.props.StringProperty(
-        name="ORM Pattern",
+    regex_orm: bpy.props.StringProperty(
+        name="ORM Regex",
         description="Custom regex pattern for ORM packed textures",
         default=""
     )
-    custom_height: bpy.props.StringProperty(
-        name="Height Pattern",
+    regex_height: bpy.props.StringProperty(
+        name="Height Regex",
         description="Custom regex pattern for height/displacement textures",
         default=""
     )
-    custom_ao: bpy.props.StringProperty(
-        name="AO Pattern", 
+    regex_ao: bpy.props.StringProperty(
+        name="AO Regex", 
         description="Custom regex pattern for ambient occlusion textures",
         default=""
     )
-    custom_emission: bpy.props.StringProperty(
-        name="Emission Pattern",
+    regex_emission: bpy.props.StringProperty(
+        name="Emission Regex",
         description="Custom regex pattern for emission textures", 
         default=""
     )
@@ -156,26 +218,60 @@ class DH_ToolkitPreferences(bpy.types.AddonPreferences):
         # Shader Builder settings section
         layout.separator()
         shader_box = layout.box()
-        shader_box.label(text="Shader Builder Custom Patterns", icon='TEXTURE')
-        shader_box.label(text="Use regex patterns to match your studio's texture naming conventions.")
+        shader_box.label(text="Shader Builder Texture Naming", icon='TEXTURE')
         
-        pattern_box = shader_box.box()
-        col = pattern_box.column()
+        # Simple naming setup
+        simple_box = shader_box.box()
+        simple_box.label(text="Simple Setup:", icon='PREFERENCES')
         
-        col.prop(self, "custom_basecolor")
-        col.prop(self, "custom_normal") 
-        col.prop(self, "custom_roughness")
-        col.prop(self, "custom_metallic")
-        col.prop(self, "custom_orm")
-        col.prop(self, "custom_height")
-        col.prop(self, "custom_ao")
-        col.prop(self, "custom_emission")
+        row = simple_box.row()
+        row.prop(self, "naming_separator")
         
+        simple_box.label(text="Set the suffix for each texture type:")
+        col = simple_box.column()
+        
+        # Create two columns for better layout
+        split = col.split(factor=0.5)
+        left_col = split.column()
+        right_col = split.column()
+        
+        left_col.prop(self, "suffix_basecolor")
+        left_col.prop(self, "suffix_normal")
+        left_col.prop(self, "suffix_roughness")
+        left_col.prop(self, "suffix_metallic")
+        
+        right_col.prop(self, "suffix_orm")
+        right_col.prop(self, "suffix_height")
+        right_col.prop(self, "suffix_ao")
+        right_col.prop(self, "suffix_emission")
+        
+        # Show example
+        sep = self.naming_separator if self.naming_separator else ""
+        example_text = f"Example: wood{sep}{self.suffix_basecolor}.jpg, wood{sep}{self.suffix_normal}.jpg"
+        simple_box.label(text=example_text, icon='INFO')
+        
+        # Advanced toggle
         shader_box.separator()
-        shader_box.label(text="Examples:")
-        shader_box.label(text="• 'mymat_d|my_diffuse' - matches either naming style")
-        shader_box.label(text="• 'studio_.*_col' - matches studio_anything_col")
-        shader_box.label(text="• '\\w+_basecolor_\\d+k' - matches word_basecolor_4k patterns")
+        shader_box.prop(self, "use_advanced_patterns", icon='SETTINGS')
+        
+        # Advanced regex patterns (only show if enabled)
+        if self.use_advanced_patterns:
+            advanced_box = shader_box.box()
+            advanced_box.label(text="Advanced Regex Patterns:", icon='SCRIPT')
+            advanced_box.label(text="For power users who want full regex control")
+            
+            col = advanced_box.column()
+            col.prop(self, "regex_basecolor")
+            col.prop(self, "regex_normal") 
+            col.prop(self, "regex_roughness")
+            col.prop(self, "regex_metallic")
+            col.prop(self, "regex_orm")
+            col.prop(self, "regex_height")
+            col.prop(self, "regex_ao")
+            col.prop(self, "regex_emission")
+            
+            advanced_box.separator()
+            advanced_box.label(text="Note: Advanced patterns override simple setup", icon='ERROR')
 
 
 # Register preferences and the operator
