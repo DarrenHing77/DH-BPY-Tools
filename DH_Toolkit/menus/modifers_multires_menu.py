@@ -15,6 +15,8 @@ def draw_modifiers_multires_menu(layout, context):
     layout.operator('dh_op.toggle_modifiers_visibility', text="Modifiers Vis")
     layout.separator()
     layout.label(text="Multires")
-    layout.operator('dh.set_multires_viewport_max', text="Set Multires Max")
-    layout.operator('dh.set_multires_viewport_zero', text="Set Multires Min")
+    icon = icons.get("icon_subdcube")
+    layout.operator('dh.set_multires_viewport_max', text="Set Multires Max",icon_value=icon.icon_id)
+    icon = icons.get("icon_cube")
+    layout.operator('dh.set_multires_viewport_zero', text="Set Multires Min",icon_value=icon.icon_id)
 

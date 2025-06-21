@@ -16,7 +16,7 @@ def draw_mesh(layout, context):
     icons = load_icons()
     
     #layout.operator("dh.decimate", text = "decimate")
-    icon = icons.get("icon_primitives")
+    icon = icons.get("icon_switcharrow")
     layout.operator('object.join', text='Join',icon_value=icon.icon_id)
     
     icon = icons.get("icon_separate")
@@ -24,7 +24,7 @@ def draw_mesh(layout, context):
     
     layout.separator()
     icon = icons.get("icon_undo")
-    layout.operator('dh_op.reset_transforms', text="Reset Transforms",icon_value=icon.icon_id )
+    layout.operator('dh_op.reset_transforms', text="Reset Transforms")
     #layout.operator('dh.fix_rotation', text="Fix Rotation")
 
     
