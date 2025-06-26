@@ -22,6 +22,8 @@ def load_icons():
         _icon_collection.load("icon_delete", os.path.join(icons_dir, "delete.png"), 'IMAGE')
         _icon_collection.load("icon_undo", os.path.join(icons_dir, "undo.png"), 'IMAGE')
         _icon_collection.load("icon_switcharrow", os.path.join(icons_dir, "switchArrow.png"), 'IMAGE')
+        _icon_collection.load("icon_camera", os.path.join(icons_dir, "camera.png"), 'IMAGE')
+        _icon_collection.load("icon_disk", os.path.join(icons_dir, "disk.png"), 'IMAGE')
     
     return _icon_collection
 
