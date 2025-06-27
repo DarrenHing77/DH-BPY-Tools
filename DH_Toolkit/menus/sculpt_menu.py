@@ -136,6 +136,7 @@ class DH_MT_Sculpt_Menu(bpy.types.Menu):
         multires_box.label(text='Multires')
         multires_box.operator('dh.set_multires_viewport_max', text="Set Multires Max")
         multires_box.operator('dh.set_multires_viewport_zero', text="Set Multires Min")
+        multires_box.operator('dh.apply_multires_base', text="Apply Base")
 
         ob = context.active_object
         if ob and ob.modifiers:

@@ -17,7 +17,11 @@ from .project_manager import (
     DH_PM_AddSubfolder,
     DH_PM_RemoveFolder,
 )
-from .multires_tools import SetMultiresViewportLevelsMax, SetMultiresViewportLevelsZero
+from .multires_tools import (
+    SetMultiresViewportLevelsMax,
+    SetMultiresViewportLevelsZero,
+    ApplyMultiresBase,
+)
 from .modifier_tools import DH_OP_CopyModifiers, DH_OP_toggle_modifiers_visibility
 from .transform_utils import DH_OP_ResetTransforms
 from .display_utils import DH_OP_ToggleWireframe, DH_OT_ToggleVisibilityOutliner, DH_OP_toggle_lock_camera, DH_OP_SwitchToShaderEditor
@@ -41,6 +45,7 @@ classes = (
     DH_OP_dcc_split_export, 
     SetMultiresViewportLevelsMax,
     SetMultiresViewportLevelsZero,
+    ApplyMultiresBase,
     DH_OP_CreateProjectDirectories,
     DH_OP_Proj_Manage,
     DH_OP_Project_Manager_Popup,
