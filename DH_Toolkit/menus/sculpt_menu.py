@@ -44,7 +44,7 @@ class DH_MT_Sculpt_Menu(bpy.types.Menu):
             ("Crease", "brushes\\essentials_brushes-mesh_sculpt.blend\\Brush\\Crease"),
             ("Mask", "brushes\\essentials_brushes-mesh_sculpt.blend\\Brush\\Mask"),
         ]
-
+        
         for name, identifier in brushes:
             op = grid.operator("brush.asset_activate", text=name)
             op.asset_library_type = 'ESSENTIALS'
@@ -77,12 +77,31 @@ class DH_MT_Sculpt_Menu(bpy.types.Menu):
         row = box.row(align=True)
         row.operator('dh.mask_extract', text="Extract Mask")
         row.operator('mesh.paint_mask_slice', text="Mask Slice")
-
+        
         box.label(text="Mask Brushes:")
         row = box.row(align=True)
         row.operator("wm.tool_set_by_id", text="Box").name = "builtin.box_mask"
         row.operator("wm.tool_set_by_id", text="Lasso").name = "builtin.lasso_mask"
         row.operator("wm.tool_set_by_id", text="Line").name = "builtin.line_mask"
+        
+        box.label(text="Transform:")
+        row = box.row(align=True)  # Create NEW row here
+        row.operator("wm.tool_set_by_id", text="Move").name = "builtin.move"
+        row.operator("wm.tool_set_by_id", text="Rotate").name = "builtin.rotate"
+        row.operator("wm.tool_set_by_id", text="Scale").name = "builtin.scale"
+
+        
+        pivot_box = col_bottom.box() 
+        pivot_box.label(text='Transform Pivot')
+
+        row = pivot_box.row(align=True)
+        row.prop(context.scene.tool_settings, "transform_pivot_point", text="")
+
+
+        row = pivot_box.row(align=True)
+        row.prop(context.scene.transform_orientation_slots[1], "type", text="Orientation")
+        
+        
 
         box.separator()
         box.label(text="Mask Operations:")
@@ -136,6 +155,7 @@ class DH_MT_Sculpt_Menu(bpy.types.Menu):
         multires_box.label(text='Multires')
         multires_box.operator('dh.set_multires_viewport_max', text="Set Multires Max")
         multires_box.operator('dh.set_multires_viewport_zero', text="Set Multires Min")
+        multires_box.operator('dh.apply_multires_base', text="Apply Base")
 
         ob = context.active_object
         if ob and ob.modifiers:

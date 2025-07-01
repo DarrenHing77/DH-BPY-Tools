@@ -8,29 +8,35 @@ class DH_MT_Shader_Editor_Menu(bpy.types.Menu):
     def draw(self, context):
         pie = self.layout.menu_pie()
         
-        # LEFT - Split Texture and Input Nodes into rows
+        # LEFT - Math, Texture, and Input Nodes (3 boxes stacked)
         col_left = pie.column()
         
-        # Texture Nodes (top row)
-        box_left_top = col_left.box()
-        self.draw_texture_nodes(box_left_top, context)
+        # Math Nodes (top)
+        box_left_math = col_left.box()
+        self.draw_math_utility_nodes(box_left_math, context)
         
         col_left.separator()
         
-        # Input Nodes (bottom row)
-        box_left_bottom = col_left.box()
-        self.draw_input_nodes(box_left_bottom, context)
+        # Texture Nodes (middle)
+        box_left_texture = col_left.box()
+        self.draw_texture_nodes(box_left_texture, context)
         
-        # RIGHT - Split Output and Utility into rows
+        col_left.separator()
+        
+        # Input Nodes (bottom)
+        box_left_input = col_left.box()
+        self.draw_input_nodes(box_left_input, context)
+        
+        # RIGHT - Output and Utility (same as before)
         col_right = pie.column()
         
-        # Output Nodes (top row)
+        # Output Nodes (top)
         box_right_top = col_right.box()
         self.draw_output_nodes(box_right_top, context)
         
         col_right.separator()
         
-        # Utility Operations (bottom row)
+        # Utility Operations (bottom)
         box_right_bottom = col_right.box()
         self.draw_utility_operations(box_right_bottom, context)
         
@@ -39,26 +45,24 @@ class DH_MT_Shader_Editor_Menu(bpy.types.Menu):
         box_bottom = col_bottom.box()
         self.draw_color_mixing_nodes(box_bottom, context)
         
-        # TOP - Converter Nodes
+        # TOP - Converter and Vector Nodes (2 boxes stacked)
         col_top = pie.column()
-        box_top = col_top.box()
-        self.draw_converter_nodes(box_top, context)
         
-        # BOTTOM-LEFT - Math & Utility Nodes
-        col_bottom_left = pie.column()
-        box_bottom_left = col_bottom_left.box()
-        self.draw_math_utility_nodes(box_bottom_left, context)
+        # Converter Nodes (top)
+        box_top_converter = col_top.box()
+        self.draw_converter_nodes(box_top_converter, context)
         
-        # BOTTOM-RIGHT - Vector Nodes
-        col_bottom_right = pie.column()
-        box_bottom_right = col_bottom_right.box()
-        self.draw_vector_nodes(box_bottom_right, context)
+        col_top.separator()
         
-        # TOP-LEFT - Empty for now
-        pie.column()
+        # Vector Nodes (bottom)
+        box_top_vector = col_top.box()
+        self.draw_vector_nodes(box_top_vector, context)
         
-        # TOP-RIGHT - Empty for now  
-        pie.column()
+        # Empty corners to avoid overlaps
+        pie.column()  # BOTTOM-LEFT
+        pie.column()  # BOTTOM-RIGHT  
+        pie.column()  # TOP-LEFT
+        pie.column()  # TOP-RIGHT
     
     def draw_texture_nodes(self, layout, context):
         layout.label(text="Texture Nodes")
