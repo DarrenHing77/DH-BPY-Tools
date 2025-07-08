@@ -19,13 +19,16 @@ class DH_OP_CycleVertexGroups(bpy.types.Operator):
         self.group_index = obj.vertex_groups.active_index if obj.vertex_groups.active_index >= 0 else 0
         obj.vertex_groups.active_index = self.group_index
 
-        # Overlay setup
+        # Setup overlay
         self.text_overlay = TextOverlay(
             text=f"Active Vertex Group: {self.groups[self.group_index].name}",
-            size=72
+            position="BOTTOM_CENTER",
+            size=48,
+            color=(1, 1, 1, 1),
+            outline=True
         )
         self.text_overlay.setup_handler(context)
-        context.area.tag_redraw()
+        
         context.window_manager.modal_handler_add(self)
         return {'RUNNING_MODAL'}
 
@@ -33,17 +36,17 @@ class DH_OP_CycleVertexGroups(bpy.types.Operator):
         obj = context.object
         groups = self.groups
 
-        if not groups:
+        if not groups or not obj:
             self.text_overlay.remove_handler()
             return {'CANCELLED'}
 
         redraw = False
 
-        if event.type == 'WHEELUPMOUSE':
+        if event.type == 'WHEELUPMOUSE' and event.value == 'PRESS':
             self.group_index = (self.group_index + 1) % len(groups)
             obj.vertex_groups.active_index = self.group_index
             redraw = True
-        elif event.type == 'WHEELDOWNMOUSE':
+        elif event.type == 'WHEELDOWNMOUSE' and event.value == 'PRESS':
             self.group_index = (self.group_index - 1) % len(groups)
             obj.vertex_groups.active_index = self.group_index
             redraw = True
@@ -55,8 +58,7 @@ class DH_OP_CycleVertexGroups(bpy.types.Operator):
             return {'CANCELLED'}
 
         if redraw:
-            self.text_overlay.text = f"Active Vertex Group: {groups[self.group_index].name}"
-            context.area.tag_redraw()
+            self.text_overlay.update_text(f"Active Vertex Group: {groups[self.group_index].name}")
 
         return {'RUNNING_MODAL'}
 

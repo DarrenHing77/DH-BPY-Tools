@@ -28,6 +28,7 @@ from .display_utils import DH_OP_ToggleWireframe, DH_OT_ToggleVisibilityOutliner
 from .utils import DH_OT_smart_hide
 from .cycle_vertex_groups import DH_OP_CycleVertexGroups
 from .shader_builder import DH_OP_BuildShader
+from .weight_fill_shell import DH_OP_WeightFillModal
 
 
 
@@ -60,6 +61,7 @@ classes = (
     DH_OP_toggle_modifiers_visibility,
     DH_OP_CycleVertexGroups,
     DH_OP_BuildShader,
+    DH_OP_WeightFillModal,
     
     
     

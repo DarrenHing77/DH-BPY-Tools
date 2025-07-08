@@ -93,6 +93,8 @@ class DH_MT_Weight_Paint_Menu(bpy.types.Menu):
         column.operator("paint.weight_set", text="Set Weight")
         column.operator("object.vertex_group_smooth", text="Smooth Weight")
         column.operator("dh.cycle_vertex_groups", text="Cycle Vertex Groups")
+        column.operator("dh.weight_fill_modal", text="Fill Shell")
+
         op = column.operator("object.symmetrize_vertex_weights", text="Symmetrize R→L")
         op.groups = 'ALL'
         op.direction = 'RIGHT_TO_LEFT'
