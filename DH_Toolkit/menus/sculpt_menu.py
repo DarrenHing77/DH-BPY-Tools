@@ -72,23 +72,26 @@ class DH_MT_Sculpt_Menu(bpy.types.Menu):
         # BOTTOM - Masking Tools
         col_bottom = pie.column()
         box = col_bottom.box()
-        box.label(text='Mask Tools')
 
-        row = box.row(align=True)
-        row.operator('dh.mask_extract', text="Extract Mask")
-        row.operator('mesh.paint_mask_slice', text="Mask Slice")
-        
         box.label(text="Mask Brushes:")
         row = box.row(align=True)
+        row.scale_y = 1.3
         row.operator("wm.tool_set_by_id", text="Box").name = "builtin.box_mask"
         row.operator("wm.tool_set_by_id", text="Lasso").name = "builtin.lasso_mask"
         row.operator("wm.tool_set_by_id", text="Line").name = "builtin.line_mask"
-        
+
         box.label(text="Transform:")
-        row = box.row(align=True)  # Create NEW row here
+        row = box.row(align=True)
+        row.scale_y = 1.3
         row.operator("wm.tool_set_by_id", text="Move").name = "builtin.move"
         row.operator("wm.tool_set_by_id", text="Rotate").name = "builtin.rotate"
         row.operator("wm.tool_set_by_id", text="Scale").name = "builtin.scale"
+
+        box.label(text='Mask Tools')
+        row = box.row(align=True)
+        row.scale_y = 1.3
+        row.operator('dh.mask_extract', text="Extract Mask")
+        row.operator('mesh.paint_mask_slice', text="Mask Slice")
 
         
         pivot_box = col_bottom.box() 
