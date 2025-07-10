@@ -8,16 +8,26 @@ class DH_OP_Open_Proj_Dir(bpy.types.Operator):
     bl_label = "Open Project"
 
     def execute(self, context):
-        # get the path of the current blend file
+        """Open the current project directory.
+
+        If the current Blender file has not been saved, fall back to the
+        default projects directory from the add-on preferences.
+        """
+
         filepath = bpy.data.filepath
 
-        # get the directory path
-        directory = os.path.dirname(filepath)
+        if filepath:
+            # Go up two folders from the .blend file location
+            directory = os.path.abspath(
+                os.path.join(os.path.dirname(filepath), os.pardir, os.pardir)
+            )
+        else:
+            prefs = context.preferences.addons["DH_Toolkit"].preferences
+            directory = prefs.default_projects_dir
 
-        # go up two folders
-        directory = os.path.abspath(os.path.join(directory, os.pardir, os.pardir))
+        if directory and os.path.isdir(directory):
+            os.startfile(directory)
+            return {'FINISHED'}
 
-        # open the directory in explorer
-        os.startfile(directory)
-
-        return {'FINISHED'}
+        self.report({'WARNING'}, "Project directory not found")
+        return {'CANCELLED'}

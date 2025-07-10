@@ -78,6 +78,14 @@ class DH_ToolkitPreferences(bpy.types.AddonPreferences):
         update=lambda self, context: self._update_keymap()
     )
 
+    # Default projects directory
+    default_projects_dir: bpy.props.StringProperty(
+        name="Default Projects Directory",
+        description="Base path for new projects and unsaved scenes",
+        subtype='DIR_PATH',
+        default=""
+    )
+
     # Shader Builder settings
     naming_separator: bpy.props.EnumProperty(
         name="Separator",
@@ -144,6 +152,12 @@ class DH_ToolkitPreferences(bpy.types.AddonPreferences):
         
         if self.key_type:
             box.label(text=f"Current key: {self.key_type}")
+
+        # Project settings
+        layout.separator()
+        proj_box = layout.box()
+        proj_box.label(text="Project Settings", icon='FILE_FOLDER')
+        proj_box.prop(self, "default_projects_dir")
 
         # Shader Builder settings (collapsed)
         layout.separator()
