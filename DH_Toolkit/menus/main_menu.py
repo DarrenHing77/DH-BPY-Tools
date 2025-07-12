@@ -59,7 +59,8 @@ class DH_MT_Main_Menu(bpy.types.Menu):
         icons = load_icons()
         icon = icons.get("icon_shaderball")
         col_center.operator("dh.build_shader", text="Build Shader",icon_value=icon.icon_id)
-        
+        col_center.separator()
+        col_center.operator("dh.comprehensive_cleanup", text="Clean Up")
         
 
         # Top center menu

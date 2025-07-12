@@ -92,6 +92,9 @@ class DH_OP_Proj_Manage(bpy.types.Operator):
     def invoke(self, context, event):
         global _active_pm_op
         _active_pm_op = self
+        if not self.directory:
+            prefs = context.preferences.addons["DH_Toolkit"].preferences
+            self.directory = prefs.default_projects_dir
         if not self.folder_items:
             self._add_default_folders()
         return context.window_manager.invoke_props_dialog(self)

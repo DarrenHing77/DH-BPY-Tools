@@ -29,6 +29,7 @@ from .utils import DH_OT_smart_hide
 from .cycle_vertex_groups import DH_OP_CycleVertexGroups
 from .shader_builder import DH_OP_BuildShader
 from .weight_fill_shell import DH_OP_WeightFillModal
+from .scene_cleanup import DH_OP_comprehensive_cleanup
 
 
 
@@ -62,6 +63,8 @@ classes = (
     DH_OP_CycleVertexGroups,
     DH_OP_BuildShader,
     DH_OP_WeightFillModal,
+    DH_OP_comprehensive_cleanup,
+    
     
     
     
