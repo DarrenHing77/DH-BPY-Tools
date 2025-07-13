@@ -20,7 +20,7 @@ from .project_manager import (
 from .multires_tools import (
     SetMultiresViewportLevelsMax,
     SetMultiresViewportLevelsZero,
-    ApplyMultiresBase,
+    ApplyMultiresBase,DH_OP_multires_level_modal
 )
 from .modifier_tools import DH_OP_CopyModifiers, DH_OP_toggle_modifiers_visibility
 from .transform_utils import DH_OP_ResetTransforms
@@ -64,6 +64,7 @@ classes = (
     DH_OP_BuildShader,
     DH_OP_WeightFillModal,
     DH_OP_comprehensive_cleanup,
+    DH_OP_multires_level_modal,
     
     
     
