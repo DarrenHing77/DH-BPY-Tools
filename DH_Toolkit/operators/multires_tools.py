@@ -7,15 +7,15 @@ class DH_OP_multires_level_modal(bpy.types.Operator):
     bl_idname = "dh.multires_level_modal"
     bl_label = "Adjust Multires Level"
     bl_options = {'REGISTER', 'UNDO'}
-
-    def __init__(self):
+        
+    def invoke(self, context, event):
+        # Initialize all state here (no __init__ method!)
         self.multires_mod = None
         self.initial_level = 0
         self.current_level = 0
         self.is_sculpt_mode = False
         self.slider = None
         
-    def invoke(self, context, event):
         # Find multires modifier on active object
         obj = context.active_object
         if not obj or obj.type != 'MESH':
@@ -89,7 +89,7 @@ class DH_OP_multires_level_modal(bpy.types.Operator):
                 self.apply_level(context)
                 
         elif event.type == 'UP_ARROW' and event.value == 'PRESS':
-            # Arrow up - gradual increase (every few presses)
+            # Arrow up - gradual increase
             if self.current_level < self.multires_mod.total_levels:
                 self.current_level += 1
                 self.apply_level(context)
