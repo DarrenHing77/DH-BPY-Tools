@@ -1,6 +1,6 @@
 import bpy
 from ..icons.icons import load_icons
-from .brush_panel import draw_sculpt_panels
+
 
 class DH_MT_Sculpt_Menu(bpy.types.Menu):
     """Context-specific pie menu for Sculpt Mode"""

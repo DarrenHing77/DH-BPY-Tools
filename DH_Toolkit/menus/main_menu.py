@@ -5,7 +5,6 @@ from .display_menu import draw_display
 from .project_menu import draw_project
 from ..icons.icons import load_icons
 from ..icons.icons import *
-from .brush_panel import draw_sculpt_panels
 from .modifers_multires_menu import draw_modifiers_multires_menu
 from ..operators.open_proj_dir import DH_OP_Open_Proj_Dir
 from ..operators.project_manager import DH_OP_Proj_Manage, DH_OP_Project_Manager_Popup, DH_OP_CreateProjectDirectories
@@ -34,7 +33,7 @@ class DH_MT_Main_Menu(bpy.types.Menu):
         row.scale_y = 1.5
         
         box_sculpt = row.box()
-        draw_sculpt_panels(box_sculpt, context)
+       
 
         box_display = row.box()
         draw_display(box_display, context)
