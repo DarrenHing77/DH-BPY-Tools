@@ -13,18 +13,23 @@ class DH_MT_Sculpt_Menu(bpy.types.Menu):
 
         # LEFT - Brush Tools
         col_left = pie.column()
+        col_left.scale_y = 1.3
 
         # Face Sets Tools
         face_box = col_left.box()
         face_box.label(text='Face Sets')
 
         row = face_box.row(align=True)
+        row.scale_y = 1.3
         row.operator('sculpt.face_sets_create', text='From Masked').mode = 'MASKED'
         row.operator('sculpt.face_sets_create', text='From Visible').mode = 'VISIBLE'
 
         row = face_box.row(align=True)
         row.operator('sculpt.face_sets_create', text='From Edit Selection').mode = 'SELECTION'
         row.operator('sculpt.face_sets_init', text='Init Loose Parts').mode = 'LOOSE_PARTS'
+        row = face_box.row()
+        row.scale_y = 1.3
+        row.operator('mesh.face_set_extract', text="Extract Face Set")
 
         # Brushes
         brush_box = col_left.box()
@@ -53,6 +58,7 @@ class DH_MT_Sculpt_Menu(bpy.types.Menu):
 
         # RIGHT - Brush Panel and Symmetry
         col_right = pie.column()
+        col_right.scale_y = 1.3
 
         draw_sculpt_panels(col_right, context)
 
@@ -71,6 +77,7 @@ class DH_MT_Sculpt_Menu(bpy.types.Menu):
 
         # BOTTOM - Masking Tools
         col_bottom = pie.column()
+        col_bottom.scale_y = 1.3
         box = col_bottom.box()
 
         box.label(text="Mask Brushes:")

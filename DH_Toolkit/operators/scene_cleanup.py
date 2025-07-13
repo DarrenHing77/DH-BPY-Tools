@@ -463,22 +463,3 @@ class DH_OP_comprehensive_cleanup(bpy.types.Operator):
             self.report({'INFO'}, "Scene is already clean!")
         print("="*50)
 
-# Menu integration
-def menu_func(self, context):
-    self.layout.operator(DH_OP_cleanup_dialog.bl_idname)
-
-def register():
-    bpy.utils.register_class(DH_OP_cleanup_dialog)
-    bpy.utils.register_class(DH_OP_comprehensive_cleanup)
-    bpy.types.VIEW3D_MT_object.append(menu_func)
-
-def unregister():
-    bpy.utils.unregister_class(DH_OP_cleanup_dialog)
-    bpy.utils.unregister_class(DH_OP_comprehensive_cleanup)
-    bpy.types.VIEW3D_MT_object.remove(menu_func)
-
-if __name__ == "__main__":
-    register()
-    
-    # Show dialog immediately for testing
-    bpy.ops.dh_op.cleanup_dialog('INVOKE_DEFAULT')

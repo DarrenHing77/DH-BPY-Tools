@@ -1,6 +1,9 @@
 import bpy
 from ..utlity.draw_2d import VerticalSlider
 from mathutils import Vector
+import bpy
+from ..utlity.draw_2d import VerticalSlider
+from mathutils import Vector
 
 class DH_OP_multires_level_modal(bpy.types.Operator):
     """Modal operator to adjust multires subdivision levels"""
@@ -9,7 +12,7 @@ class DH_OP_multires_level_modal(bpy.types.Operator):
     bl_options = {'REGISTER', 'UNDO'}
         
     def invoke(self, context, event):
-        # Initialize all state here (no __init__ method!)
+        # Initialize all state here
         self.multires_mod = None
         self.initial_level = 0
         self.current_level = 0
@@ -43,7 +46,11 @@ class DH_OP_multires_level_modal(bpy.types.Operator):
             self.initial_level = self.multires_mod.levels
             self.current_level = self.multires_mod.levels
             
-        # Setup slider with that sexy blue color #3474eb
+        # Debug print
+        print(f"🔥 Modal started: Initial level = {self.initial_level}, Total levels = {self.multires_mod.total_levels}")
+        print(f"🔥 Mode: {'Sculpt' if self.is_sculpt_mode else 'Viewport'}")
+            
+        # Setup slider
         self.slider = VerticalSlider(
             center=Vector((context.region.width / 2, context.region.height / 2))
         )
@@ -54,25 +61,34 @@ class DH_OP_multires_level_modal(bpy.types.Operator):
 
     def modal(self, context, event):
         if event.type == 'MOUSEMOVE':
-            # Update slider visual and get level
+            # Use slider for visual feedback and mouse tracking
             mouse_co = Vector((event.mouse_region_x, event.mouse_region_y))
             
-            # Convert slider output to subdivision level
-            slider_val = self.slider.eval(
+            # Calculate level change
+            level_change = self.slider.eval(
                 mouse_co, 
-                f"Multires Level ({'Sculpt' if self.is_sculpt_mode else 'Viewport'})",
+                "Change",
                 color=(0.204, 0.455, 0.922, 0.8),  # #3474eb
-                unit_scale=50,  # Adjust sensitivity
+                unit_scale=40,
                 digits=0
             )
             
-            # Clamp to valid range
+            # Calculate target level
             target_level = max(0, min(self.multires_mod.total_levels, 
-                                    self.initial_level + int(slider_val)))
+                                    self.initial_level + int(level_change)))
             
             if target_level != self.current_level:
                 self.current_level = target_level
                 self.apply_level(context)
+                print(f"🔥 Level: {self.current_level}")
+            
+            # Add separate prominent text for current level
+            self.slider.add_text(
+                f"LEVEL: {self.current_level}/{self.multires_mod.total_levels} ({'SCULPT' if self.is_sculpt_mode else 'VIEWPORT'})",
+                Vector((mouse_co.x + 50, mouse_co.y + 50)),
+                32,  # Bigger text
+                (1, 1, 1, 1)  # White
+            )
             
             context.area.tag_redraw()
 
@@ -81,27 +97,32 @@ class DH_OP_multires_level_modal(bpy.types.Operator):
             if self.current_level < self.multires_mod.total_levels:
                 self.current_level += 1
                 self.apply_level(context)
+                print(f"🔥 Wheel UP: Level = {self.current_level}")
             
         elif event.type == 'WHEELDOWNMOUSE' and event.value == 'PRESS':
             # Mouse wheel down - decrease level
             if self.current_level > 0:
                 self.current_level -= 1
                 self.apply_level(context)
+                print(f"🔥 Wheel DOWN: Level = {self.current_level}")
                 
         elif event.type == 'UP_ARROW' and event.value == 'PRESS':
             # Arrow up - gradual increase
             if self.current_level < self.multires_mod.total_levels:
                 self.current_level += 1
                 self.apply_level(context)
+                print(f"🔥 Arrow UP: Level = {self.current_level}")
                 
         elif event.type == 'DOWN_ARROW' and event.value == 'PRESS':
             # Arrow down - gradual decrease
             if self.current_level > 0:
                 self.current_level -= 1
                 self.apply_level(context)
+                print(f"🔥 Arrow DOWN: Level = {self.current_level}")
 
         elif event.type in {'LEFTMOUSE', 'SPACE', 'RET'}:
             # Confirm
+            print(f"🔥 Modal finished at level: {self.current_level}")
             self.cleanup()
             return {'FINISHED'}
 
@@ -111,6 +132,7 @@ class DH_OP_multires_level_modal(bpy.types.Operator):
                 self.multires_mod.sculpt_levels = self.initial_level
             else:
                 self.multires_mod.levels = self.initial_level
+            print(f"🔥 Modal cancelled, restored to: {self.initial_level}")
             self.cleanup()
             return {'CANCELLED'}
 
@@ -118,13 +140,23 @@ class DH_OP_multires_level_modal(bpy.types.Operator):
     
     def apply_level(self, context):
         """Apply current level to the appropriate multires property"""
-        if self.is_sculpt_mode:
-            self.multires_mod.sculpt_levels = self.current_level
-        else:
-            self.multires_mod.levels = self.current_level
-        
-        # Force viewport update
-        context.area.tag_redraw()
+        try:
+            if self.is_sculpt_mode:
+                self.multires_mod.sculpt_levels = self.current_level
+                print(f"🔥 Applied sculpt_levels = {self.current_level}")
+            else:
+                self.multires_mod.levels = self.current_level
+                print(f"🔥 Applied viewport levels = {self.current_level}")
+            
+            # Force viewport update
+            context.area.tag_redraw()
+            
+            # Try additional update methods
+            if context.object:
+                context.object.update_tag()
+            
+        except Exception as e:
+            print(f"🔥 ERROR in apply_level: {e}")
         
     def cleanup(self):
         """Clean up the slider"""
