@@ -8,7 +8,7 @@ def draw_sculpt_panels(layout, context):
     brush = context.tool_settings.sculpt.brush
     col = layout.column(align=True)
     
-    # Use only valid panels
+    col.popover('VIEW3D_PT_tools_brush_settings_advanced', text="Advanced")
     col.popover('VIEW3D_PT_tools_brush_falloff', text="Falloff")
     col.popover('VIEW3D_PT_tools_brush_texture', text="Texture") 
     col.popover('VIEW3D_PT_tools_brush_stroke', text="Stroke")

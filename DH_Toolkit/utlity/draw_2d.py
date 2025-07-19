@@ -1,7 +1,7 @@
 import bpy
 from mathutils import Vector
 import gpu
-import bgl
+# BGL REMOVED - no longer exists in 4.5
 from gpu_extras import batch
 from math import cos, sin, pi
 import blf
@@ -79,31 +79,37 @@ class Draw2D:
         self.handler = bpy.types.SpaceView3D.draw_handler_add(self, (), 'WINDOW', 'POST_PIXEL')
 
     def remove_handler(self):
-        bpy.types.SpaceView3D.draw_handler_remove(self.handler, 'WINDOW')
+        if self.handler:
+            bpy.types.SpaceView3D.draw_handler_remove(self.handler, 'WINDOW')
 
     def draw(self):
-        gpu.state.blend_set('ALPHA')  # replaces bgl.glEnable(bgl.GL_BLEND)
+        # GPU state management - replaces BGL calls
+        gpu.state.blend_set('ALPHA')
 
         if self.batch_redraw or not self.batch:
             self.update_batch()
 
-        gpu.state.line_width_set(self.thickness)  # replaces bgl.glLineWidth
+        gpu.state.line_width_set(self.thickness)
         self.shader.bind()
-        self.batch.draw(self.shader)
+        if self.batch:
+            self.batch.draw(self.shader)
         gpu.state.line_width_set(1)
 
+        # Text rendering
         for text, location, size, color, dpi in self.text:
             blf.position(0, location[0], location[1], 0)
             blf.size(0, size)
             blf.color(0, *color)
             blf.shadow(0, 3, *self.font_shadow)
             blf.draw(0, text)
-            blf.position(0, 20, 40, 0)
-        blf.size(0, 16, 72)
+            
+        # Reset text properties
+        blf.position(0, 20, 40, 0)
+        blf.size(0, 16)
         blf.color(0, 1, 1, 1, 1)  # White
         blf.draw(0, f"Thickness: {self.thickness}")
 
-        gpu.state.blend_set('NONE')  # replaces bgl.glDisable(bgl.GL_BLEND)
+        gpu.state.blend_set('NONE')
 
 
 class VerticalSlider(Draw2D):
@@ -121,5 +127,5 @@ class VerticalSlider(Draw2D):
         self.add_line(co, self.eval_co, color)
         self.add_line(self.center + x * 10, self.center - x * 10, color)
         val = (self.eval_co.y - self.center.y) / unit_scale
-        self.add_text(f'{text:} {round(val, digits)}', self.eval_co + Vector((10, 10)), 20, color)
+        self.add_text(f'{text}: {round(val, digits)}', self.eval_co + Vector((10, 10)), 20, color)
         return val
