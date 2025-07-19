@@ -1,5 +1,19 @@
 import bpy
 from ..icons.icons import load_icons
+from .modifers_multires_menu import draw_modifiers_multires_menu
+
+
+def draw_sculpt_panels(layout, context):
+    """Draw brush settings panels that actually exist in Blender 4.4"""
+    brush = context.tool_settings.sculpt.brush
+    col = layout.column(align=True)
+    
+    # Use only valid panels
+    col.popover('VIEW3D_PT_tools_brush_falloff', text="Falloff")
+    col.popover('VIEW3D_PT_tools_brush_texture', text="Texture") 
+    col.popover('VIEW3D_PT_tools_brush_stroke', text="Stroke")
+    col.popover('VIEW3D_PT_sculpt_options', text="Sculpt Options")
+    col.popover('VIEW3D_PT_sculpt_symmetry', text="Symmetry")
 
 
 class DH_MT_Sculpt_Menu(bpy.types.Menu):
@@ -11,7 +25,7 @@ class DH_MT_Sculpt_Menu(bpy.types.Menu):
         icons = load_icons()
         pie = self.layout.menu_pie()
 
-        # LEFT - Brush Tools
+        # LEFT - Face Sets and Brushes
         col_left = pie.column()
         col_left.scale_y = 1.3
 
@@ -20,15 +34,14 @@ class DH_MT_Sculpt_Menu(bpy.types.Menu):
         face_box.label(text='Face Sets')
 
         row = face_box.row(align=True)
-        row.scale_y = 1.3
         row.operator('sculpt.face_sets_create', text='From Masked').mode = 'MASKED'
         row.operator('sculpt.face_sets_create', text='From Visible').mode = 'VISIBLE'
 
         row = face_box.row(align=True)
         row.operator('sculpt.face_sets_create', text='From Edit Selection').mode = 'SELECTION'
         row.operator('sculpt.face_sets_init', text='Init Loose Parts').mode = 'LOOSE_PARTS'
+
         row = face_box.row()
-        row.scale_y = 1.3
         row.operator('mesh.face_set_extract', text="Extract Face Set")
 
         # Brushes
@@ -56,15 +69,18 @@ class DH_MT_Sculpt_Menu(bpy.types.Menu):
             op.asset_library_identifier = ""
             op.relative_asset_identifier = identifier
 
-        # RIGHT - Brush Panel and Symmetry
+        # RIGHT - Brush Settings and Symmetry
         col_right = pie.column()
         col_right.scale_y = 1.3
 
-        draw_sculpt_panels(col_right, context)
+        # Use existing brush panel function
+        brush_box = col_right.box()
+        brush_box.label(text="Brush Settings")
+        draw_sculpt_panels(brush_box, context)
 
+        # Symmetry
         sym_box = col_right.box()
         sym_box.label(text='Symmetry')
-        sculpt = context.tool_settings.sculpt
 
         row = sym_box.row(align=True)
         row.prop(context.object, "use_mesh_mirror_x", text="X", toggle=True)
@@ -75,65 +91,45 @@ class DH_MT_Sculpt_Menu(bpy.types.Menu):
         row.operator("sculpt.symmetrize", text="+X to -X")
         row.operator("sculpt.symmetrize", text="-X to +X")
 
-        # BOTTOM - Masking Tools
+        # BOTTOM - Masking and Transform Tools
         col_bottom = pie.column()
         col_bottom.scale_y = 1.3
-        box = col_bottom.box()
 
-        box.label(text="Mask Brushes:")
-        row = box.row(align=True)
-        row.scale_y = 1.3
-        row.operator("wm.tool_set_by_id", text="Box").name = "builtin.box_mask"
-        row.operator("wm.tool_set_by_id", text="Lasso").name = "builtin.lasso_mask"
-        row.operator("wm.tool_set_by_id", text="Line").name = "builtin.line_mask"
+        # Mask Tools
+        mask_box = col_bottom.box()
+        mask_box.label(text="Mask Tools")
 
-        box.label(text="Transform:")
-        row = box.row(align=True)
-        row.scale_y = 1.3
-        row.operator("wm.tool_set_by_id", text="Move").name = "builtin.move"
-        row.operator("wm.tool_set_by_id", text="Rotate").name = "builtin.rotate"
-        row.operator("wm.tool_set_by_id", text="Scale").name = "builtin.scale"
+        row = mask_box.row(align=True)
+        row.operator("wm.tool_set_by_id", text="Box Mask").name = "builtin.box_mask"
+        row.operator("wm.tool_set_by_id", text="Lasso Mask").name = "builtin.lasso_mask"
 
-        box.label(text='Mask Tools')
-        row = box.row(align=True)
-        row.scale_y = 1.3
+        row = mask_box.row(align=True)
         row.operator('dh.mask_extract', text="Extract Mask")
         row.operator('mesh.paint_mask_slice', text="Mask Slice")
 
-        
-        pivot_box = col_bottom.box() 
-        pivot_box.label(text='Transform Pivot')
-
-        row = pivot_box.row(align=True)
-        row.prop(context.scene.tool_settings, "transform_pivot_point", text="")
-
-
-        row = pivot_box.row(align=True)
-        row.prop(context.scene.transform_orientation_slots[1], "type", text="Orientation")
-        
-        
-
-        box.separator()
-        box.label(text="Mask Operations:")
-        row = box.row(align=True)
-
+        row = mask_box.row(align=True)
         op = row.operator("paint.mask_flood_fill", text="Fill")
         op.mode = 'VALUE'
         op.value = 1.0
-
         op = row.operator("paint.mask_flood_fill", text="Clear")
         op.mode = 'VALUE'
         op.value = 0.0
 
-        op = row.operator("paint.mask_flood_fill", text="Invert")
-        op.mode = 'INVERT'
-        box.separator()
-        box.label(text='Preferences')
-        row = box.row(align=True)
-        row.operator("screen.userpref_show", text="Open Preferences")
+        # Transform Tools
+        transform_box = col_bottom.box()
+        transform_box.label(text='Transform')
 
-        # TOP - Multires, Dyntopo, and Modifiers
+        row = transform_box.row(align=True)
+        row.operator("wm.tool_set_by_id", text="Move").name = "builtin.move"
+        row.operator("wm.tool_set_by_id", text="Rotate").name = "builtin.rotate"
+        row.operator("wm.tool_set_by_id", text="Scale").name = "builtin.scale"
+
+        row = transform_box.row(align=True)
+        row.prop(context.scene.tool_settings, "transform_pivot_point", text="Pivot")
+
+        # TOP - Use your existing modifiers/multires function
         col_top = pie.column()
+        col_top.scale_y = 1.3
 
         # Dyntopo
         dyntopo_box = col_top.box()
@@ -141,46 +137,13 @@ class DH_MT_Sculpt_Menu(bpy.types.Menu):
 
         if context.sculpt_object:
             dyntopo_enabled = context.sculpt_object.use_dynamic_topology_sculpting
-
             dyntopo_box.operator("sculpt.dynamic_topology_toggle",
                                  text="Disable Dyntopo" if dyntopo_enabled else "Enable Dyntopo")
 
-            if dyntopo_enabled:
-                if hasattr(context.tool_settings.sculpt, "detail_type_method"):
-                    dyntopo_box.prop(context.tool_settings.sculpt, "detail_type_method", text="")
+            if dyntopo_enabled and hasattr(context.tool_settings.sculpt, "detail_type_method"):
+                dyntopo_box.prop(context.tool_settings.sculpt, "detail_type_method", text="")
+                dyntopo_box.operator("sculpt.detail_flood_fill", text="Detail Flood Fill")
 
-                    if context.tool_settings.sculpt.detail_type_method == 'CONSTANT':
-                        dyntopo_box.prop(context.tool_settings.sculpt, "constant_detail_resolution", text="Resolution")
-                    elif context.tool_settings.sculpt.detail_type_method == 'BRUSH':
-                        dyntopo_box.prop(context.tool_settings.sculpt, "detail_percent", text="Detail Percent")
-                    elif context.tool_settings.sculpt.detail_type_method == 'RELATIVE':
-                        dyntopo_box.prop(context.tool_settings.sculpt, "detail_size", text="Detail Size")
-
-                    dyntopo_box.operator("sculpt.detail_flood_fill", text="Detail Flood Fill")
-                    dyntopo_box.operator("sculpt.sample_detail_size", text="Sample Detail Size")
-
-        # Multires
-        col_top.separator()
-        multires_box = col_top.box()
-        multires_box.label(text='Multires')
-        multires_box.operator('dh.set_multires_viewport_max', text="Set Multires Max")
-        multires_box.operator('dh.set_multires_viewport_zero', text="Set Multires Min")
-        multires_box.operator('dh.apply_multires_base', text="Apply Base")
-        multires_box.operator('dh.multires_level_modal', text="Adjust Level (Modal)", icon='DRIVER')
-
-        ob = context.active_object
-        if ob and ob.modifiers:
-            multires = next((m for m in ob.modifiers if m.type == 'MULTIRES'), None)
-            if multires:
-                multires_box.operator("object.multires_subdivide", text="Subdivide")
-                multires_box.operator("object.multires_higher_levels_delete", text="Delete Higher")
-
-        # Modifiers Box
-        mod_box = col_top.box()
-        mod_box.label(text='Modifiers')
-
-        mod_box.operator('object.apply_all_modifiers', text="Apply Modifiers")
-        icon = icons.get("icon_delete")
-        mod_box.operator('object.delete_all_modifiers', text="Delete Modifiers", icon_value=icon.icon_id)
-        mod_box.operator('dh_op.copy_modifiers', text="Copy Modifiers")
-
+        # Use your existing modifiers/multires menu function
+        modifiers_box = col_top.box()
+        draw_modifiers_multires_menu(modifiers_box, context)

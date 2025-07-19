@@ -16,7 +16,7 @@ def draw_modifiers_multires_menu(layout, context):
     layout.separator()
     layout.label(text="Multires")
     
-    # NEW: Modal level adjuster - the star of the show
+    
     layout.operator('dh.multires_level_modal', text="Adjust Level (Modal)", icon='DRIVER')
     
     icon = icons.get("icon_subdcube")
