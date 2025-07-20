@@ -16,6 +16,7 @@ from .project_manager import (
     DH_PM_AddFolder,
     DH_PM_AddSubfolder,
     DH_PM_RemoveFolder,
+    DH_PM_ToggleFolder,
 )
 from .multires_tools import (
     SetMultiresViewportLevelsMax,
@@ -53,6 +54,7 @@ classes = (
     DH_PM_AddFolder,
     DH_PM_AddSubfolder,
     DH_PM_RemoveFolder,
+    DH_PM_ToggleFolder,
     DH_OP_ToggleWireframe,
     DH_OT_ToggleVisibilityOutliner,
     DH_OP_toggle_lock_camera,
