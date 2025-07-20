@@ -8,6 +8,7 @@ _active_pm_op = None
 
 class PM_FolderItem(bpy.types.PropertyGroup):
     path: bpy.props.StringProperty(name="Folder Path")
+    expanded: bpy.props.BoolProperty(name="Expanded", default=True)
 
 def create_project_directories(project_name, directory, folders):
     """Create all folders for the project on disk."""
@@ -33,6 +34,22 @@ class DH_OP_Proj_Manage(bpy.types.Operator):
     directory: bpy.props.StringProperty(name="Directory", subtype='DIR_PATH')
     save_scene: bpy.props.BoolProperty(name="Save Current Scene", default=False)
     folder_items: bpy.props.CollectionProperty(type=PM_FolderItem)
+
+    def _has_children(self, index):
+        prefix = self.folder_items[index].path + os.sep
+        next_index = index + 1
+        return next_index < len(self.folder_items) and self.folder_items[next_index].path.startswith(prefix)
+
+    def _is_item_visible(self, index):
+        path = self.folder_items[index].path
+        while os.sep in path:
+            path = os.path.dirname(path)
+            for i in range(index - 1, -1, -1):
+                if self.folder_items[i].path == path:
+                    if not self.folder_items[i].expanded:
+                        return False
+                    break
+        return True
 
     def _add_default_folders(self):
         """Populate the folder list with a default hierarchy."""
@@ -64,6 +81,7 @@ class DH_OP_Proj_Manage(bpy.types.Operator):
         for path in defaults:
             item = self.folder_items.add()
             item.path = path
+            item.expanded = True
 
     def execute(self, context):
         if not self.project_name or not self.directory:
@@ -109,10 +127,18 @@ class DH_OP_Proj_Manage(bpy.types.Operator):
         layout.operator("dh.pm_add_folder", icon='ADD', text="Add Folder")
 
         for i, item in enumerate(self.folder_items):
+            if not self._is_item_visible(i):
+                continue
             row = layout.row(align=True)
             indent = item.path.count(os.sep)
-            sub = row.row()
+            sub = row.row(align=True)
             for _ in range(indent):
+                sub.label(text="", icon='BLANK1')
+            if self._has_children(i):
+                icon = 'TRIA_DOWN' if item.expanded else 'TRIA_RIGHT'
+                op = sub.operator("dh.pm_toggle_folder", text="", icon=icon, emboss=False)
+                op.index = i
+            else:
                 sub.label(text="", icon='BLANK1')
             icon = 'FILE_FOLDER' if indent == 0 else 'FILE_CACHE'
             sub.label(text=os.path.basename(item.path), icon=icon)
@@ -136,6 +162,7 @@ class DH_PM_AddFolder(bpy.types.Operator):
         if op:
             item = op.folder_items.add()
             item.path = f"New_Folder_{len(op.folder_items)}"
+            item.expanded = True
             # ensure new folders are root level by moving after the last
             # existing top level item
             insert_index = len(op.folder_items) - 1
@@ -163,6 +190,7 @@ class DH_PM_AddSubfolder(bpy.types.Operator):
             parent_indent = parent.count(os.sep)
             item = op.folder_items.add()
             item.path = os.path.join(parent, f"New_Folder_{len(op.folder_items)}")
+            item.expanded = True
 
             # insert the new item directly after the parent's existing subtree
             insert_index = self.index + 1
@@ -192,6 +220,21 @@ class DH_PM_RemoveFolder(bpy.types.Operator):
             while idx < len(op.folder_items) and op.folder_items[idx].path.startswith(prefix):
                 op.folder_items.remove(idx)
             op.folder_items.remove(self.index)
+        return {'FINISHED'}
+
+
+class DH_PM_ToggleFolder(bpy.types.Operator):
+    bl_idname = "dh.pm_toggle_folder"
+    bl_label = "Toggle Folder"
+
+    index: bpy.props.IntProperty()
+
+    def execute(self, context):
+        global _active_pm_op
+        op = _active_pm_op
+        if op and 0 <= self.index < len(op.folder_items):
+            item = op.folder_items[self.index]
+            item.expanded = not item.expanded
         return {'FINISHED'}
 
 # Popup operator to display the success message
