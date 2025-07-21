@@ -136,6 +136,7 @@ class DH_OP_Proj_Manage(bpy.types.Operator):
                 sub.label(text="", icon='BLANK1')
             if self._has_children(i):
                 icon = 'TRIA_DOWN' if item.expanded else 'TRIA_RIGHT'
+
                 op = sub.operator(
                     "dh.pm_toggle_folder",
                     text="",
@@ -144,6 +145,10 @@ class DH_OP_Proj_Manage(bpy.types.Operator):
                 )
                 if op:
                     op.index = i
+
+                op = sub.operator("dh.pm_toggle_folder", text="", icon=icon, emboss=False)
+                op.index = i
+
             else:
                 sub.label(text="", icon='BLANK1')
             icon = 'FILE_FOLDER' if indent == 0 else 'FILE_CACHE'
