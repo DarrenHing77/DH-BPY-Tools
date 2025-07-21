@@ -134,18 +134,25 @@ class DH_OP_Proj_Manage(bpy.types.Operator):
             sub = row.row(align=True)
             for _ in range(indent):
                 sub.label(text="", icon='BLANK1')
-            
             if self._has_children(i):
                 icon = 'TRIA_DOWN' if item.expanded else 'TRIA_RIGHT'
-                op = sub.operator("dh.pm_toggle_folder", text="", icon=icon, emboss=False)
+
+                op = sub.operator(
+                    "dh.pm_toggle_folder",
+                    text="",
+                    icon=icon,
+                    emboss=False,
+                )
                 if op:
                     op.index = i
+
+                op = sub.operator("dh.pm_toggle_folder", text="", icon=icon, emboss=False)
+                op.index = i
+
             else:
                 sub.label(text="", icon='BLANK1')
-            
-            folder_icon = 'FILE_FOLDER' if indent == 0 else 'FILE_CACHE'
-            sub.label(text=os.path.basename(item.path), icon=folder_icon)
-            
+            icon = 'FILE_FOLDER' if indent == 0 else 'FILE_CACHE'
+            sub.label(text=os.path.basename(item.path), icon=icon)
             op = row.operator("dh.pm_add_subfolder", text="", icon='ADD')
             if op:
                 op.index = i
