@@ -51,7 +51,8 @@ In sculpt mode press `W` to open a menu of commonly used sculpting brushes.
 ### Project Manager
 
 Invoke **Create Project Directories** from the *Object* menu to generate a
-standardised folder tree.  Optionally the current scene can be saved to the new
+standardised folder tree.  Folders in the popup can be expanded or collapsed to
+manage long hierarchies. Optionally the current scene can be saved to the new
 project directory.
 
 ### Texture Tools and ACES Settings
