@@ -22,6 +22,8 @@ class DH_MT_Main_Menu(bpy.types.Menu):
         # Left column
         col_left = pie.column()
         box = col_left.box()
+        col_left.operator("dh.move_to_new_collection", text="Move to New Collection")
+        col_left.operator("dh.select_all_in_collection", text="Select Collection Objects")
         icons = load_icons()
         draw_mesh(box, context)
         col_left.separator()

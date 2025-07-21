@@ -5,6 +5,110 @@ import bpy
 from ..utlity.draw_2d import VerticalSlider
 from mathutils import Vector
 
+import bpy
+import bpy
+
+class DH_OP_AddMultires(bpy.types.Operator):
+    """Add multires modifier (works in Object and Sculpt mode)"""
+    bl_idname = "dh.add_multires"
+    bl_label = "Add Multires"
+    bl_options = {'REGISTER', 'UNDO'}
+    
+    def execute(self, context):
+        obj = context.active_object
+        if not obj or obj.type != 'MESH':
+            self.report({'ERROR'}, "Select a mesh object")
+            return {'CANCELLED'}
+        
+        # Check if multires already exists
+        for mod in obj.modifiers:
+            if mod.type == 'MULTIRES':
+                self.report({'WARNING'}, "Multires modifier already exists")
+                return {'CANCELLED'}
+        
+        # Store current mode
+        current_mode = context.mode
+        
+        # Switch to Object mode if needed
+        if current_mode != 'OBJECT':
+            bpy.ops.object.mode_set(mode='OBJECT')
+        
+        # Add multires modifier
+        multires = obj.modifiers.new(name="Multires", type='MULTIRES')
+        
+        # Switch back to original mode
+        if current_mode == 'SCULPT':
+            bpy.ops.object.mode_set(mode='SCULPT')
+        
+        self.report({'INFO'}, "Added Multires modifier")
+        return {'FINISHED'}
+
+
+class DH_OP_MultiresSubdivide(bpy.types.Operator):
+    """Add a subdivision level to multires modifier"""
+    bl_idname = "dh.multires_subdivide"
+    bl_label = "Multires Subdivide"
+    bl_options = {'REGISTER', 'UNDO'}
+    
+    def execute(self, context):
+        obj = context.active_object
+        if not obj or obj.type != 'MESH':
+            self.report({'ERROR'}, "Select a mesh object")
+            return {'CANCELLED'}
+        
+        # Find multires modifier
+        multires = None
+        for mod in obj.modifiers:
+            if mod.type == 'MULTIRES':
+                multires = mod
+                break
+        
+        if not multires:
+            self.report({'ERROR'}, "No multires modifier found")
+            return {'CANCELLED'}
+        
+        # Store current mode
+        current_mode = context.mode
+        
+        # Switch to Object mode if needed
+        if current_mode != 'OBJECT':
+            bpy.ops.object.mode_set(mode='OBJECT')
+        
+        # Make sure object is active
+        context.view_layer.objects.active = obj
+        
+        # Subdivide with Catmull-Clark (4.5 syntax)
+        try:
+            bpy.ops.object.multires_subdivide(modifier=multires.name, mode='CATMULL_CLARK')
+            
+            # Switch back to original mode
+            if current_mode == 'SCULPT':
+                bpy.ops.object.mode_set(mode='SCULPT')
+            
+            # Show text overlay with result
+            from ..utlity.text_overlay import TextOverlay
+            prefs = context.preferences.addons["DH_Toolkit"].preferences
+
+            overlay = TextOverlay(
+                text=f"Subdivided: Level {multires.total_levels}",
+                position="BOTTOM_CENTER",
+                size=48,
+                color=prefs.text_overlay_success_color,
+                outline=prefs.text_overlay_show_outline
+            )
+            overlay.setup_handler(context)
+            
+            # Auto-remove after 2 seconds
+            def remove_overlay():
+                overlay.remove_handler()
+            bpy.app.timers.register(remove_overlay, first_interval=2.0)
+            
+        except Exception as e:
+            self.report({'ERROR'}, f"Subdivision failed: {e}")
+            return {'CANCELLED'}
+        
+        return {'FINISHED'}
+
 class DH_OP_multires_level_modal(bpy.types.Operator):
     """Modal operator to adjust multires subdivision levels"""
     bl_idname = "dh.multires_level_modal"

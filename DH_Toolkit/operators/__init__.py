@@ -8,6 +8,7 @@ from .open_proj_dir import DH_OP_Open_Proj_Dir
 from .DCC_Export import DH_OP_dcc_export
 from .mask_tools import DH_OP_MaskExtract
 from .export_fbx_multi import DH_OP_dcc_split_export
+from .collection_tools import (DH_OP_MoveToNewCollection,DH_OP_SelectAllInCollection)
 from .project_manager import (
     DH_OP_CreateProjectDirectories,
     DH_OP_Proj_Manage,
@@ -20,7 +21,7 @@ from .project_manager import (
 from .multires_tools import (
     SetMultiresViewportLevelsMax,
     SetMultiresViewportLevelsZero,
-    ApplyMultiresBase,DH_OP_multires_level_modal
+    ApplyMultiresBase,DH_OP_multires_level_modal, DH_OP_MultiresSubdivide, DH_OP_AddMultires
 )
 from .modifier_tools import DH_OP_CopyModifiers, DH_OP_toggle_modifiers_visibility
 from .transform_utils import DH_OP_ResetTransforms
@@ -65,6 +66,10 @@ classes = (
     DH_OP_comprehensive_cleanup,
     DH_OP_multires_level_modal,
     DH_OP_cleanup_dialog,
+    DH_OP_MultiresSubdivide,
+    DH_OP_AddMultires,
+    DH_OP_MoveToNewCollection,
+    DH_OP_SelectAllInCollection,
     
     
     

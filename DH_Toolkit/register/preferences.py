@@ -126,6 +126,41 @@ class DH_ToolkitPreferences(bpy.types.AddonPreferences):
     regex_ao: bpy.props.StringProperty(name="AO Regex", default="")
     regex_emission: bpy.props.StringProperty(name="Emission Regex", default="")
 
+    # Add these to DH_ToolkitPreferences class
+    # Text Overlay settings
+    text_overlay_success_color: bpy.props.FloatVectorProperty(
+        name="Success Color",
+        description="Color for success messages",
+        subtype='COLOR',
+        default=(0.2, 1.0, 0.2, 1.0),
+        size=4,
+        min=0.0, max=1.0
+    )
+
+    text_overlay_error_color: bpy.props.FloatVectorProperty(
+        name="Error Color", 
+        description="Color for error messages",
+        subtype='COLOR',
+        default=(1.0, 0.2, 0.2, 1.0),
+        size=4,
+        min=0.0, max=1.0
+    )
+
+    text_overlay_info_color: bpy.props.FloatVectorProperty(
+        name="Info Color",
+        description="Color for info messages", 
+        subtype='COLOR',
+        default=(0.2, 0.6, 1.0, 1.0),
+        size=4,
+        min=0.0, max=1.0
+    )
+
+    text_overlay_show_outline: bpy.props.BoolProperty(
+        name="Show Text Outline",
+        description="Show outline around overlay text",
+        default=False
+    )
+
     def _update_keymap(self):
         """Update keymap when preferences change"""
         try:
@@ -193,6 +228,18 @@ class DH_ToolkitPreferences(bpy.types.AddonPreferences):
             grid.prop(self, "regex_height")
             grid.prop(self, "regex_ao")
             grid.prop(self, "regex_emission")
+        
+        # Text Overlay settings
+        layout.separator()
+        overlay_box = layout.box()
+        overlay_box.label(text="Text Overlay Settings", icon='FONTPREVIEW')
+        
+        overlay_box.prop(self, "text_overlay_show_outline")
+        
+        grid = overlay_box.grid_flow(row_major=True, columns=3, even_columns=True)
+        grid.prop(self, "text_overlay_success_color")
+        grid.prop(self, "text_overlay_error_color") 
+        grid.prop(self, "text_overlay_info_color")
 
 def register_preferences():
     bpy.utils.register_class(DH_OP_SetShortcutKey)
